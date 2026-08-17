@@ -1,6 +1,6 @@
 import { query, queryOne } from '../db/pool.js';
 import { config } from '../config/index.js';
-import { cosineSimilarity, imageSimilarity } from './llmService.js';
+import { cosineSimilarity } from './llmService.js';
 import { locationSimilarity, timeSimilarity, attributeSimilarity } from '../utils/similarity.js';
 import { createNotification } from './notificationService.js';
 
@@ -24,7 +24,6 @@ interface MatchResult {
   found_item_id: string;
   total_score: number;
   desc_score: number;
-  image_score: number;
   location_score: number;
   time_score: number;
   attr_score: number;
@@ -81,8 +80,8 @@ export async function runMatchingEngine(
   const results: MatchResult[] = [];
 
   for (const candidate of candidates) {
-    // --- Description similarity (30%) ---
-    let descScore = 50; // default neutral
+    // --- Description similarity (40%) — embedding cosine distance ---
+    let descScore = 50; // default neutral when no embeddings available
     if (source.description_embedding && candidate.description_embedding) {
       try {
         const srcEmbedding = parseVector(source.description_embedding);
@@ -96,40 +95,29 @@ export async function runMatchingEngine(
       descScore = simpleTextSimilarity(source.description, candidate.description);
     }
 
-    // --- Image similarity (25%) ---
-    let imgScore = 50; // neutral if no images
-    if (source.photo_url && candidate.photo_url) {
-      try {
-        imgScore = await imageSimilarity(source.photo_url, candidate.photo_url);
-      } catch {
-        imgScore = 50;
-      }
-    }
-
-    // --- Location similarity (20%) ---
+    // --- Location similarity (27%) — Haversine proximity ---
     const locScore = locationSimilarity(
       source.latitude, source.longitude,
       candidate.latitude, candidate.longitude,
       config.matching.locationRadiusKm
     );
 
-    // --- Time similarity (15%) ---
+    // --- Time similarity (20%) — time-window overlap ---
     const tScore = timeSimilarity(
       source.event_time,
       candidate.event_time,
       config.matching.timeWindowHours
     );
 
-    // --- Attribute similarity (10%) ---
+    // --- Attribute similarity (13%) — category / colour / brand ---
     const attrScore = attributeSimilarity(
       { category: source.category, brand: source.brand, colour: source.colour },
       { category: candidate.category, brand: candidate.brand, colour: candidate.colour }
     );
 
-    // --- Weighted total ---
+    // --- Weighted total (0–100) ---
     const totalScore = Math.round(
       descScore * weights.description +
-      imgScore * weights.image +
       locScore * weights.location +
       tScore * weights.time +
       attrScore * weights.attributes
@@ -142,7 +130,6 @@ export async function runMatchingEngine(
         found_item_id: type === 'found' ? source.id : candidate.id,
         total_score: totalScore,
         desc_score: descScore,
-        image_score: imgScore,
         location_score: locScore,
         time_score: tScore,
         attr_score: attrScore,
@@ -157,19 +144,19 @@ export async function runMatchingEngine(
   for (const match of results) {
     await query(
       `INSERT INTO matches (lost_item_id, found_item_id, total_score, desc_score, image_score, location_score, time_score, attr_score)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+       VALUES ($1, $2, $3, $4, NULL, $5, $6, $7)
        ON CONFLICT (lost_item_id, found_item_id)
        DO UPDATE SET
          total_score = EXCLUDED.total_score,
          desc_score = EXCLUDED.desc_score,
-         image_score = EXCLUDED.image_score,
+         image_score = NULL,
          location_score = EXCLUDED.location_score,
          time_score = EXCLUDED.time_score,
          attr_score = EXCLUDED.attr_score,
          status = 'pending'`,
       [
         match.lost_item_id, match.found_item_id, match.total_score,
-        match.desc_score, match.image_score, match.location_score,
+        match.desc_score, match.location_score,
         match.time_score, match.attr_score,
       ]
     );

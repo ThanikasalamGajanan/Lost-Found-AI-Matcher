@@ -31,15 +31,17 @@ export const config = {
   },
 
   matching: {
+    // Component weights (must sum to 1.00).
+    // Raw ratio from spec: description 30, location 20, time 15, attributes 10
+    // Scaled proportionally (×100/75) so the total score reaches 100.
     weights: {
-      description: 0.30,
-      image: 0.25,
-      location: 0.20,
-      time: 0.15,
-      attributes: 0.10,
+      description: 0.40,   // 30 → 40%  (embedding cosine similarity)
+      location: 0.27,      // 20 → 27%  (Haversine proximity)
+      time: 0.20,          // 15 → 20%  (time-window overlap)
+      attributes: 0.13,    // 10 → 13%  (category / colour / brand)
     },
     minScoreThreshold: 40,  // Minimum score (%) to surface a match
-    maxRetries: 3,          // Max verification retries before escalation
+    maxRetries: 2,          // Max verification attempts (1 initial + 1 retry, then admin)
     locationRadiusKm: 5,    // Max km for location similarity = 100%
     timeWindowHours: 72,    // Max hours for time similarity = 100%
   },
