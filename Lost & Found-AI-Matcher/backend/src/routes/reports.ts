@@ -4,6 +4,7 @@ import { asyncHandler, AppError } from '../middleware/errorHandler.js';
 import { validateBody, lostReportSchema, foundReportSchema } from '../middleware/validate.js';
 import { query, queryOne } from '../db/pool.js';
 import { generateEmbedding, extractStructuredFields } from '../services/llmService.js';
+import { runMatchingEngine } from '../services/matchingEngine.js';
 
 export const reportRoutes = Router();
 
@@ -62,7 +63,15 @@ reportRoutes.post(
            photo_url, identifying_info]
     );
 
-    res.status(201).json(result);
+    // Run matching engine non-blocking: report is still returned if matching fails
+    let matches: Awaited<ReturnType<typeof runMatchingEngine>> = [];
+    try {
+      matches = await runMatchingEngine((result as { id: string }).id, 'lost');
+    } catch (matchErr) {
+      console.error('Matching engine failed for lost report:', matchErr);
+    }
+
+    res.status(201).json({ ...result, matches });
   })
 );
 
@@ -116,9 +125,49 @@ reportRoutes.post(
            photo_url, JSON.stringify(private_details || {})]
     );
 
-    res.status(201).json(result);
+    // Run matching engine non-blocking: report is still returned if matching fails
+    let matches: Awaited<ReturnType<typeof runMatchingEngine>> = [];
+    try {
+      matches = await runMatchingEngine((result as { id: string }).id, 'found');
+    } catch (matchErr) {
+      console.error('Matching engine failed for found report:', matchErr);
+    }
+
+    res.status(201).json({ ...result, matches });
   })
 );
+
+// ────────────────────────────────────────────────
+// GET /api/reports/user/:userId
+// MUST be defined before /:id so Express does not treat "user" as an ID.
+// ────────────────────────────────────────────────
+reportRoutes.get('/user/:userId', asyncHandler(async (req: AuthRequest, res) => {
+  const { userId } = req.params;
+
+  // Users can only view their own reports (admins can view any)
+  if (userId !== req.userId && req.userRole !== 'admin') {
+    throw new AppError('Access denied', 403);
+  }
+
+  const lostItems = await query(
+    `SELECT id, category, brand, colour, description, location,
+            lost_at AS event_time, photo_url, status, created_at, 'lost' AS type
+     FROM lost_items WHERE user_id = $1 ORDER BY created_at DESC`,
+    [userId]
+  );
+
+  const foundItems = await query(
+    `SELECT id, category, brand, colour, description, location,
+            found_at AS event_time, photo_url, status, created_at, 'found' AS type
+     FROM found_items WHERE user_id = $1 ORDER BY created_at DESC`,
+    [userId]
+  );
+
+  res.json({
+    lost: lostItems,
+    found: foundItems,
+  });
+}));
 
 // ────────────────────────────────────────────────
 // GET /api/reports/:id
@@ -156,35 +205,4 @@ reportRoutes.get('/:id', asyncHandler(async (req: AuthRequest, res) => {
   }
 
   res.json(item);
-}));
-
-// ────────────────────────────────────────────────
-// GET /api/reports/user/:userId
-// ────────────────────────────────────────────────
-reportRoutes.get('/user/:userId', asyncHandler(async (req: AuthRequest, res) => {
-  const { userId } = req.params;
-
-  // Users can only view their own reports (admins can view any)
-  if (userId !== req.userId && req.userRole !== 'admin') {
-    throw new AppError('Access denied', 403);
-  }
-
-  const lostItems = await query(
-    `SELECT id, category, brand, colour, description, location,
-            lost_at AS event_time, photo_url, status, created_at, 'lost' AS type
-     FROM lost_items WHERE user_id = $1 ORDER BY created_at DESC`,
-    [userId]
-  );
-
-  const foundItems = await query(
-    `SELECT id, category, brand, colour, description, location,
-            found_at AS event_time, photo_url, status, created_at, 'found' AS type
-     FROM found_items WHERE user_id = $1 ORDER BY created_at DESC`,
-    [userId]
-  );
-
-  res.json({
-    lost: lostItems,
-    found: foundItems,
-  });
 }));

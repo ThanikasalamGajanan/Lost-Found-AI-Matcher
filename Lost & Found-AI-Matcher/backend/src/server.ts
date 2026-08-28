@@ -12,6 +12,7 @@ import { matchRoutes } from './routes/matches.js';
 import { verifyRoutes } from './routes/verify.js';
 import { adminRoutes } from './routes/admin.js';
 import { notificationRoutes } from './routes/notifications.js';
+import { uploadRoutes } from './routes/upload.js';
 
 const app = express();
 
@@ -42,6 +43,7 @@ app.use('/api/matches', matchRoutes);
 app.use('/api/verify', verifyRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/notifications', notificationRoutes);
+app.use('/api/upload', uploadRoutes);
 
 // ── Error Handling ────────────────────────────
 app.use(errorHandler);

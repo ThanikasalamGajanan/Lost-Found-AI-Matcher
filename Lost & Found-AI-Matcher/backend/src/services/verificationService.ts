@@ -24,28 +24,33 @@ export async function generateVerificationQuestion(
   // Use LLM to generate a natural-sounding question
   const humanReadableField = fieldKey.replace(/_/g, ' ');
 
-  const response = await openai.chat.completions.create({
-    model: 'gpt-4o-mini',
-    messages: [
-      {
-        role: 'system',
-        content: `You generate verification questions for a lost-and-found system.
+  let questionText = `What was the ${humanReadableField} of the item?`;
+
+  try {
+    const response = await openai.chat.completions.create({
+      model: 'gpt-4o-mini',
+      messages: [
+        {
+          role: 'system',
+          content: `You generate verification questions for a lost-and-found system.
 The question should be answerable only by the true owner of the item.
 Generate a clear, specific question about one detail of the item.
 Return ONLY the question text, nothing else. No quotes, no JSON wrapper.`,
-      },
-      {
-        role: 'user',
-        content: `Generate a verification question about this item detail: "${humanReadableField}".
+        },
+        {
+          role: 'user',
+          content: `Generate a verification question about this item detail: "${humanReadableField}".
 The question should ask the claimant to identify this specific attribute of their lost item.`,
-      },
-    ],
-    temperature: 0.7,
-    max_tokens: 100,
-  });
+        },
+      ],
+      temperature: 0.7,
+      max_tokens: 100,
+    });
 
-  const questionText = response.choices[0].message.content?.trim() ||
-    `What was the ${humanReadableField} of the item?`;
+    questionText = response.choices[0].message.content?.trim() || questionText;
+  } catch (err) {
+    console.warn('OpenAI question generation failed, using fallback question:', err);
+  }
 
   // Store in database
   const result = await queryOne<{ id: string; question_text: string }>(

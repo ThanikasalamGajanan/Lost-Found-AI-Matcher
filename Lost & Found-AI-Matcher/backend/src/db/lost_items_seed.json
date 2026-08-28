@@ -1,0 +1,512 @@
+[
+  {
+    "category": "keys",
+    "brand": "Toyota",
+    "colour": "silver",
+    "description": "Silver Toyota car keys with a small leather keychain and a gym membership tag",
+    "location": "Colombo Fort Railway Station",
+    "latitude": 6.9355,
+    "longitude": 79.8487,
+    "lost_at": "2024-12-15T08:30:00Z"
+  },
+  {
+    "category": "electronics",
+    "brand": "Apple",
+    "colour": "black",
+    "description": "Black iPhone 14 Pro in a clear case, last seen near the food court",
+    "location": "One Galle Face Mall",
+    "latitude": 6.9271,
+    "longitude": 79.8422,
+    "lost_at": "2024-12-14T18:45:00Z"
+  },
+  {
+    "category": "bag",
+    "brand": "Nike",
+    "colour": "blue",
+    "description": "Blue Nike backpack with a water bottle pocket and white zippers",
+    "location": "University of Colombo",
+    "latitude": 6.9000,
+    "longitude": 79.8588,
+    "lost_at": "2024-12-13T14:20:00Z"
+  },
+  {
+    "category": "wallet",
+    "brand": "Fossil",
+    "colour": "brown",
+    "description": "Brown leather Fossil wallet containing student ID and debit card",
+    "location": "Crescat Boulevard",
+    "latitude": 6.9180,
+    "longitude": 79.8485,
+    "lost_at": "2024-12-12T20:10:00Z"
+  },
+  {
+    "category": "jewellery",
+    "brand": "",
+    "colour": "gold",
+    "description": "Gold chain necklace with a small heart pendant",
+    "location": "Galle Face Green",
+    "latitude": 6.9271,
+    "longitude": 79.8442,
+    "lost_at": "2024-12-11T19:00:00Z"
+  },
+  {
+    "category": "clothing",
+    "brand": "Zara",
+    "colour": "red",
+    "description": "Red Zara wool scarf left behind at the cinema",
+    "location": "Savoy Cinema Wellawatte",
+    "latitude": 6.8774,
+    "longitude": 79.8612,
+    "lost_at": "2024-12-10T22:30:00Z"
+  },
+  {
+    "category": "document",
+    "brand": "",
+    "colour": "white",
+    "description": "White envelope with passport and travel documents",
+    "location": "Bandaranaike International Airport",
+    "latitude": 7.1801,
+    "longitude": 79.8841,
+    "lost_at": "2024-12-09T06:15:00Z"
+  },
+  {
+    "category": "umbrella",
+    "brand": "Totes",
+    "colour": "black",
+    "description": "Black Totes folding umbrella with wooden handle",
+    "location": "Viharamahadevi Park",
+    "latitude": 6.9130,
+    "longitude": 79.8615,
+    "lost_at": "2024-12-08T17:45:00Z"
+  },
+  {
+    "category": "bottle",
+    "brand": "Hydro Flask",
+    "colour": "teal",
+    "description": "Teal Hydro Flask water bottle with stickers on it",
+    "location": "Excel World Entertainment Park",
+    "latitude": 6.9185,
+    "longitude": 79.8540,
+    "lost_at": "2024-12-07T13:00:00Z"
+  },
+  {
+    "category": "glasses",
+    "brand": "Ray-Ban",
+    "colour": "black",
+    "description": "Black Ray-Ban sunglasses in a black case",
+    "location": "Mount Lavinia Beach",
+    "latitude": 6.8321,
+    "longitude": 79.8656,
+    "lost_at": "2024-12-06T16:20:00Z"
+  },
+  {
+    "category": "keys",
+    "brand": "Honda",
+    "colour": "black",
+    "description": "Black Honda motorcycle key with a red keychain",
+    "location": "Bambalapitiya Railway Station",
+    "latitude": 6.8885,
+    "longitude": 79.8585,
+    "lost_at": "2024-12-05T09:30:00Z"
+  },
+  {
+    "category": "electronics",
+    "brand": "Samsung",
+    "colour": "silver",
+    "description": "Silver Samsung Galaxy S23 with a cracked screen protector",
+    "location": "Dutch Hospital Shopping Precinct",
+    "latitude": 6.9340,
+    "longitude": 79.8430,
+    "lost_at": "2024-12-04T21:00:00Z"
+  },
+  {
+    "category": "bag",
+    "brand": "Adidas",
+    "colour": "black",
+    "description": "Black Adidas gym bag with white stripes and a shoe compartment",
+    "location": "Cinnamon Grand Colombo",
+    "latitude": 6.9182,
+    "longitude": 79.8495,
+    "lost_at": "2024-12-03T07:45:00Z"
+  },
+  {
+    "category": "wallet",
+    "brand": "Tommy Hilfiger",
+    "colour": "navy",
+    "description": "Navy blue Tommy Hilfiger wallet with multiple card slots",
+    "location": "Odel Department Store",
+    "latitude": 6.9190,
+    "longitude": 79.8505,
+    "lost_at": "2024-12-02T15:30:00Z"
+  },
+  {
+    "category": "jewellery",
+    "brand": "",
+    "colour": "silver",
+    "description": "Silver hoop earrings, small size, one pair",
+    "location": "Majestic City",
+    "latitude": 6.8940,
+    "longitude": 79.8535,
+    "lost_at": "2024-12-01T11:20:00Z"
+  },
+  {
+    "category": "clothing",
+    "brand": "Nike",
+    "colour": "white",
+    "description": "White Nike baseball cap with a black logo",
+    "location": "Independence Square",
+    "latitude": 6.9053,
+    "longitude": 79.8652,
+    "lost_at": "2024-11-30T14:00:00Z"
+  },
+  {
+    "category": "document",
+    "brand": "",
+    "colour": "blue",
+    "description": "Blue folder containing university assignment papers",
+    "location": "SLIIT Malabe Campus",
+    "latitude": 6.9147,
+    "longitude": 79.9723,
+    "lost_at": "2024-11-29T10:45:00Z"
+  },
+  {
+    "category": "umbrella",
+    "brand": "",
+    "colour": "red",
+    "description": "Red compact umbrella with a curved handle",
+    "location": "Pettah Market",
+    "latitude": 6.9355,
+    "longitude": 79.8565,
+    "lost_at": "2024-11-28T16:30:00Z"
+  },
+  {
+    "category": "bottle",
+    "brand": "Nalgene",
+    "colour": "clear",
+    "description": "Clear Nalgene water bottle with measurement markings",
+    "location": "Arcade Independence Square",
+    "latitude": 6.9060,
+    "longitude": 79.8645,
+    "lost_at": "2024-11-27T12:15:00Z"
+  },
+  {
+    "category": "glasses",
+    "brand": "Oakley",
+    "colour": "blue",
+    "description": "Blue Oakley sports sunglasses with reflective lenses",
+    "location": "Royal Colombo Golf Club",
+    "latitude": 6.8730,
+    "longitude": 79.8800,
+    "lost_at": "2024-11-26T09:00:00Z"
+  },
+  {
+    "category": "keys",
+    "brand": "Suzuki",
+    "colour": "silver",
+    "description": "Silver Suzuki car key with remote lock buttons",
+    "location": "Nugegoda Bus Stand",
+    "latitude": 6.8649,
+    "longitude": 79.8998,
+    "lost_at": "2024-11-25T08:00:00Z"
+  },
+  {
+    "category": "electronics",
+    "brand": "Sony",
+    "colour": "black",
+    "description": "Black Sony WH-1000XM5 wireless headphones in carrying case",
+    "location": "Nelum Pokuna Theatre",
+    "latitude": 6.9110,
+    "longitude": 79.8655,
+    "lost_at": "2024-11-24T19:45:00Z"
+  },
+  {
+    "category": "bag",
+    "brand": "Herschel",
+    "colour": "grey",
+    "description": "Grey Herschel laptop backpack with a padded sleeve",
+    "location": "WTC Colombo",
+    "latitude": 6.9325,
+    "longitude": 79.8425,
+    "lost_at": "2024-11-23T13:30:00Z"
+  },
+  {
+    "category": "wallet",
+    "brand": "Levis",
+    "colour": "black",
+    "description": "Black Levi's canvas wallet with chain attachment",
+    "location": "Marino Mall",
+    "latitude": 6.8810,
+    "longitude": 79.8690,
+    "lost_at": "2024-11-22T18:20:00Z"
+  },
+  {
+    "category": "jewellery",
+    "brand": "",
+    "colour": "rose gold",
+    "description": "Rose gold bracelet with small charms",
+    "location": "Havelock City Mall",
+    "latitude": 6.8895,
+    "longitude": 79.8725,
+    "lost_at": "2024-11-21T20:00:00Z"
+  },
+  {
+    "category": "clothing",
+    "brand": "Adidas",
+    "colour": "black",
+    "description": "Black Adidas running jacket with reflective strips",
+    "location": "Galle Face Hotel",
+    "latitude": 6.9205,
+    "longitude": 79.8435,
+    "lost_at": "2024-11-20T06:45:00Z"
+  },
+  {
+    "category": "document",
+    "brand": "",
+    "colour": "yellow",
+    "description": "Yellow notebook with handwritten lecture notes",
+    "location": "University of Moratuwa",
+    "latitude": 6.7963,
+    "longitude": 79.9008,
+    "lost_at": "2024-11-19T11:30:00Z"
+  },
+  {
+    "category": "umbrella",
+    "brand": "Samsonite",
+    "colour": "navy",
+    "description": "Navy Samsonite automatic umbrella with silver tip",
+    "location": "Taj Samudra Hotel",
+    "latitude": 6.9310,
+    "longitude": 79.8440,
+    "lost_at": "2024-11-18T17:00:00Z"
+  },
+  {
+    "category": "bottle",
+    "brand": "CamelBak",
+    "colour": "orange",
+    "description": "Orange CamelBak water bottle with a bite valve",
+    "location": "Diyatha Uyana",
+    "latitude": 6.9720,
+    "longitude": 79.9160,
+    "lost_at": "2024-11-17T15:45:00Z"
+  },
+  {
+    "category": "glasses",
+    "brand": "Persol",
+    "colour": "tortoise",
+    "description": "Tortoise shell Persol eyeglasses in a brown case",
+    "location": "Laksala",
+    "latitude": 6.9335,
+    "longitude": 79.8420,
+    "lost_at": "2024-11-16T10:15:00Z"
+  },
+  {
+    "category": "keys",
+    "brand": "Mitsubishi",
+    "colour": "grey",
+    "description": "Grey Mitsubishi car key with a worn rubber button",
+    "location": "Dehiwala Zoo",
+    "latitude": 6.8569,
+    "longitude": 79.8742,
+    "lost_at": "2024-11-15T14:30:00Z"
+  },
+  {
+    "category": "electronics",
+    "brand": "Apple",
+    "colour": "white",
+    "description": "White Apple AirPods Pro in a charging case",
+    "location": "Liberty Plaza",
+    "latitude": 6.9095,
+    "longitude": 79.8520,
+    "lost_at": "2024-11-14T21:30:00Z"
+  },
+  {
+    "category": "bag",
+    "brand": "JanSport",
+    "colour": "purple",
+    "description": "Purple JanSport school backpack with many pins",
+    "location": "Isipathana College",
+    "latitude": 6.8930,
+    "longitude": 79.8580,
+    "lost_at": "2024-11-13T07:15:00Z"
+  },
+  {
+    "category": "wallet",
+    "brand": "Gucci",
+    "colour": "beige",
+    "description": "Beige Gucci wallet with signature pattern",
+    "location": "Shangri-La Hotel Colombo",
+    "latitude": 6.9290,
+    "longitude": 79.8445,
+    "lost_at": "2024-11-12T19:30:00Z"
+  },
+  {
+    "category": "jewellery",
+    "brand": "",
+    "colour": "white gold",
+    "description": "White gold engagement ring with a small diamond",
+    "location": "Gangaramaya Temple",
+    "latitude": 6.9165,
+    "longitude": 79.8565,
+    "lost_at": "2024-11-11T08:45:00Z"
+  },
+  {
+    "category": "clothing",
+    "brand": "Puma",
+    "colour": "green",
+    "description": "Green Puma track pants with white stripes",
+    "location": "Sugathadasa Stadium",
+    "latitude": 6.9370,
+    "longitude": 79.8690,
+    "lost_at": "2024-11-10T17:30:00Z"
+  },
+  {
+    "category": "document",
+    "brand": "",
+    "colour": "white",
+    "description": "White envelope with birth certificate and NIC copies",
+    "location": "Colombo Public Library",
+    "latitude": 6.9105,
+    "longitude": 79.8630,
+    "lost_at": "2024-11-09T12:00:00Z"
+  },
+  {
+    "category": "umbrella",
+    "brand": "Fulton",
+    "colour": "pink",
+    "description": "Pink Fulton compact umbrella with a wrist strap",
+    "location": "Barefoot Garden Cafe",
+    "latitude": 6.9195,
+    "longitude": 79.8500,
+    "lost_at": "2024-11-08T18:15:00Z"
+  },
+  {
+    "category": "bottle",
+    "brand": "Stanley",
+    "colour": "green",
+    "description": "Green Stanley thermos bottle with a handle",
+    "location": "Seema Malaka",
+    "latitude": 6.9180,
+    "longitude": 79.8560,
+    "lost_at": "2024-11-07T08:30:00Z"
+  },
+  {
+    "category": "glasses",
+    "brand": "Warby Parker",
+    "colour": "black",
+    "description": "Black Warby Parker eyeglasses with thin frames",
+    "location": "Cinnamon Lakeside",
+    "latitude": 6.9315,
+    "longitude": 79.8480,
+    "lost_at": "2024-11-06T22:00:00Z"
+  },
+  {
+    "category": "keys",
+    "brand": "Nissan",
+    "colour": "black",
+    "description": "Black Nissan car key fob with a leather tag",
+    "location": "Ratmalana Railway Station",
+    "latitude": 6.8205,
+    "longitude": 79.8800,
+    "lost_at": "2024-11-05T10:00:00Z"
+  },
+  {
+    "category": "electronics",
+    "brand": "Xiaomi",
+    "colour": "blue",
+    "description": "Blue Xiaomi power bank 20000mAh with LED indicator",
+    "location": "Crescat Boulevard",
+    "latitude": 6.9180,
+    "longitude": 79.8485,
+    "lost_at": "2024-11-04T16:45:00Z"
+  },
+  {
+    "category": "bag",
+    "brand": "Kipling",
+    "colour": "red",
+    "description": "Red Kipling crossbody bag with a monkey keychain",
+    "location": "Dutch Hospital",
+    "latitude": 6.9340,
+    "longitude": 79.8430,
+    "lost_at": "2024-11-03T13:20:00Z"
+  },
+  {
+    "category": "wallet",
+    "brand": "Montblanc",
+    "colour": "black",
+    "description": "Black Montblanc leather card holder with silver emblem",
+    "location": "Cinnamon Life",
+    "latitude": 6.9200,
+    "longitude": 79.8550,
+    "lost_at": "2024-11-02T20:45:00Z"
+  },
+  {
+    "category": "jewellery",
+    "brand": "",
+    "colour": "platinum",
+    "description": "Platinum wedding band with engraved date inside",
+    "location": "St. Anthony's Shrine Kochchikade",
+    "latitude": 6.9375,
+    "longitude": 79.8575,
+    "lost_at": "2024-11-01T09:30:00Z"
+  },
+  {
+    "category": "clothing",
+    "brand": "Uniqlo",
+    "colour": "beige",
+    "description": "Beige Uniqlo lightweight jacket with hood",
+    "location": "Havelock City",
+    "latitude": 6.8895,
+    "longitude": 79.8725,
+    "lost_at": "2024-10-31T15:00:00Z"
+  },
+  {
+    "category": "document",
+    "brand": "",
+    "colour": "green",
+    "description": "Green file with property deed and legal papers",
+    "location": "World Trade Center",
+    "latitude": 6.9325,
+    "longitude": 79.8425,
+    "lost_at": "2024-10-30T11:45:00Z"
+  },
+  {
+    "category": "umbrella",
+    "brand": "Blunt",
+    "colour": "charcoal",
+    "description": "Charcoal Blunt umbrella with a blunt tip",
+    "location": "Galle Face",
+    "latitude": 6.9271,
+    "longitude": 79.8442,
+    "lost_at": "2024-10-29T19:00:00Z"
+  },
+  {
+    "category": "bottle",
+    "brand": "Klean Kanteen",
+    "colour": "stainless",
+    "description": "Stainless steel Klean Kanteen bottle with a bamboo cap",
+    "location": "Viharamahadevi Park",
+    "latitude": 6.9130,
+    "longitude": 79.8615,
+    "lost_at": "2024-10-28T07:30:00Z"
+  },
+  {
+    "category": "glasses",
+    "brand": "Maui Jim",
+    "colour": "gold",
+    "description": "Gold Maui Jim aviator sunglasses with brown lenses",
+    "location": "Mount Lavinia Hotel",
+    "latitude": 6.8310,
+    "longitude": 79.8660,
+    "lost_at": "2024-10-27T14:45:00Z"
+  },
+  {
+    "category": "other",
+    "brand": "",
+    "colour": "multicolour",
+    "description": "Small stuffed teddy bear wearing a blue vest",
+    "location": "Dehiwala Zoo",
+    "latitude": 6.8569,
+    "longitude": 79.8742,
+    "lost_at": "2024-10-26T16:30:00Z"
+  }
+]

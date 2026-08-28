@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { CATEGORIES, COLOURS, BRANDS } from '@/types';
 import { uploadPhoto } from '@/lib/supabase';
 import { Camera, X } from 'lucide-react';
+import toast from 'react-hot-toast';
 
 interface ReportFormProps {
   type: 'lost' | 'found';
@@ -70,6 +71,9 @@ export function ReportForm({ type, onSubmit }: ReportFormProps) {
           private_details,
         });
       }
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Submission failed';
+      toast.error(message);
     } finally {
       setLoading(false);
     }
