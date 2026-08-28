@@ -1,25 +1,54 @@
 import { pool } from './pool.js';
+import { supabaseAdmin } from './supabase.js';
 
 async function seed(): Promise<void> {
   console.log('Seeding database...');
 
-  // Create a test admin user (you need to first create this user in Supabase Auth)
-  // For local development, use the signup endpoint first, then update role manually:
-  // UPDATE users SET role = 'admin' WHERE email = 'admin@test.com';
+  const testEmail = 'admin@test.com';
+  const testPassword = 'TestPassword123!';
 
-  const testUserId = '00000000-0000-0000-0000-000000000001';
+  // Find or create the test admin user in Supabase Auth using the service role key.
+  let testUserId: string;
 
-  // Insert test user (only works if this ID exists in auth.users)
-  try {
-    await pool.query(
-      `INSERT INTO users (id, email, full_name, role)
-       VALUES ($1, 'admin@test.com', 'Admin User', 'admin')
-       ON CONFLICT (id) DO NOTHING`,
-      [testUserId]
-    );
-  } catch {
-    console.log('Skipping user seed (auth.users entry needed first).');
+  const { data: listData, error: listError } = await supabaseAdmin.auth.admin.listUsers();
+  if (listError) {
+    throw new Error(`Failed to list auth users: ${listError.message}`);
   }
+
+  const existingUser = listData.users.find((u) => u.email === testEmail);
+
+  if (existingUser) {
+    testUserId = existingUser.id;
+    console.log(`Using existing auth user: ${testEmail} (${testUserId})`);
+  } else {
+    const { data: createData, error: createError } = await supabaseAdmin.auth.admin.createUser({
+      email: testEmail,
+      password: testPassword,
+      email_confirm: true,
+      user_metadata: { full_name: 'Admin User' },
+    });
+
+    if (createError || !createData.user) {
+      throw new Error(`Failed to create auth user: ${createError?.message ?? 'unknown error'}`);
+    }
+
+    testUserId = createData.user.id;
+    console.log(`Created auth user: ${testEmail} (${testUserId})`);
+  }
+
+  // Ensure the public.users row exists and has the admin role.
+  // The on_auth_user_created trigger usually creates this row automatically,
+  // but we upsert to make the seed idempotent and to set role = 'admin'.
+  await pool.query(
+    `INSERT INTO users (id, email, full_name, role)
+     VALUES ($1, $2, 'Admin User', 'admin')
+     ON CONFLICT (id) DO UPDATE SET
+       email = EXCLUDED.email,
+       full_name = EXCLUDED.full_name,
+       role = EXCLUDED.role`,
+    [testUserId, testEmail]
+  );
+  console.log('Ensured admin user row in public.users');
 
   // Sample lost item
   await pool.query(

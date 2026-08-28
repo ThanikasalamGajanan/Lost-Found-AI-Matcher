@@ -18,6 +18,7 @@ export function MatchCard({ match, userRole, onVerified }: MatchCardProps) {
   const [answer, setAnswer] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [verified, setVerified] = useState(match.status === 'approved');
+  const [pendingAttemptId, setPendingAttemptId] = useState('');
 
   const scoreColour =
     match.total_score >= 80 ? 'text-green-600' :
@@ -38,7 +39,8 @@ export function MatchCard({ match, userRole, onVerified }: MatchCardProps) {
   const handleSubmitAnswer = async () => {
     setSubmitting(true);
     try {
-      await verifyApi.submitAnswer(match.id, answer);
+      const result = await verifyApi.submitAnswer(match.id, answer) as { id: string; attempt_number: number };
+      setPendingAttemptId(result.id);
       toast.success('Answer submitted! Waiting for the finder to verify.');
       setShowVerification(false);
       setAnswer('');
@@ -51,12 +53,17 @@ export function MatchCard({ match, userRole, onVerified }: MatchCardProps) {
   };
 
   const handleJudge = async (isCorrect: boolean) => {
+    if (!pendingAttemptId) {
+      toast.error('No pending answer to judge');
+      return;
+    }
     setSubmitting(true);
     try {
-      const result = await verifyApi.judgeAnswer(match.id, isCorrect, '') as { result: string; message: string };
+      const result = await verifyApi.judgeAnswer(match.id, isCorrect, pendingAttemptId) as { result: string; message: string };
       toast.success(result.message);
       if (isCorrect) {
         setVerified(true);
+        setPendingAttemptId('');
         onVerified?.();
       }
     } catch (err: unknown) {
@@ -90,9 +97,8 @@ export function MatchCard({ match, userRole, onVerified }: MatchCardProps) {
       </div>
 
       {/* Score breakdown */}
-      <div className="grid grid-cols-5 gap-2 text-center text-xs text-gray-500 mb-4">
+      <div className="grid grid-cols-4 gap-2 text-center text-xs text-gray-500 mb-4">
         <div><span className="block font-semibold text-gray-700">{match.desc_score}%</span>Description</div>
-        <div><span className="block font-semibold text-gray-700">{match.image_score}%</span>Image</div>
         <div><span className="block font-semibold text-gray-700">{match.location_score}%</span>Location</div>
         <div><span className="block font-semibold text-gray-700">{match.time_score}%</span>Time</div>
         <div><span className="block font-semibold text-gray-700">{match.attr_score}%</span>Attributes</div>

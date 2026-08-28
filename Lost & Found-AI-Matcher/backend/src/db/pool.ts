@@ -3,9 +3,13 @@ import { config } from '../config/index.js';
 
 const { Pool } = pg;
 
+// Detect local/private PostgreSQL hosts so we don't force SSL on them.
+const localHostPattern = /(?:localhost|127\.\d+\.\d+\.\d+|(?:10|172\.(?:1[6-9]|2\d|3[01])|192\.168)\.\d+\.\d+)/i;
+const useSsl = !localHostPattern.test(config.databaseUrl);
+
 export const pool = new Pool({
   connectionString: config.databaseUrl,
-  ssl: config.nodeEnv === 'production' ? { rejectUnauthorized: false } : false,
+  ssl: useSsl ? { rejectUnauthorized: false } : false,
   max: 20,
   idleTimeoutMillis: 30000,
   connectionTimeoutMillis: 5000,

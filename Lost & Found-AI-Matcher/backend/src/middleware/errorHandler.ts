@@ -1,4 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
+import multer from 'multer';
 
 export class AppError extends Error {
   statusCode: number;
@@ -23,6 +24,18 @@ export const errorHandler = (
       status: 'error',
       message: err.message,
     });
+    return;
+  }
+
+  // Handle multer errors (file too large, unexpected field, etc.)
+  if (err instanceof multer.MulterError) {
+    const message =
+      err.code === 'LIMIT_FILE_SIZE'
+        ? 'File too large. Maximum size is 5 MB.'
+        : err.code === 'LIMIT_UNEXPECTED_FILE'
+          ? 'Unexpected upload field. Use "photo" as the field name.'
+          : err.message;
+    res.status(400).json({ status: 'error', message });
     return;
   }
 

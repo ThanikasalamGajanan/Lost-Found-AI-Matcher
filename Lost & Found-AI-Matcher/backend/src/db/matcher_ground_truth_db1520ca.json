@@ -1,0 +1,224 @@
+{
+  "about": "Answer key for the seed data. matched_pairs are true matches the matcher should find. near_miss_pairs share category, colour and area but are different items - a matcher that links them is producing a false positive. Any lost/found combination not listed here is unrelated.",
+  "seed": 20260826,
+  "counts": {
+    "matched_pairs": 10,
+    "near_miss_pairs": 10,
+    "random_unrelated_items": 10
+  },
+  "scoring_note": "Strip the match_id field from the seed records before running the matcher, otherwise you are handing it the answer.",
+  "matched_pairs": [
+    {
+      "match_id": "M01",
+      "lost_id": "L-001",
+      "found_id": "F-001",
+      "item": "Lenovo laptop backpack with torn front zip pocket",
+      "why_hard": "Colour given as black vs dark grey; finder states no brand and calls it only a heavy dark backpack.",
+      "category": "bag",
+      "distance_km": 0.055,
+      "gap_hours": 1.2,
+      "language_pair": "en->en"
+    },
+    {
+      "match_id": "M02",
+      "lost_id": "L-002",
+      "found_id": "F-002",
+      "item": "Steel water bottle, blue flip cap, 'Nitharsan' name sticker",
+      "why_hard": "Tamil lost report vs English found report; the name sticker is the decisive link and the brand is only on one side.",
+      "category": "bottle",
+      "distance_km": 0.111,
+      "gap_hours": 0.8,
+      "language_pair": "ta->en"
+    },
+    {
+      "match_id": "M03",
+      "lost_id": "L-003",
+      "found_id": "F-003",
+      "item": "Single gold-plated jhumka earring with a red stone",
+      "why_hard": "Tamil to Sinhala, no shared script at all. Both sides state it is one earring and not a pair.",
+      "category": "jewellery",
+      "distance_km": 0.049,
+      "gap_hours": 11.8,
+      "language_pair": "ta->si"
+    },
+    {
+      "match_id": "M04",
+      "lost_id": "L-004",
+      "found_id": "F-004",
+      "item": "Gold rimmed progressive spectacles in a maroon hard case",
+      "why_hard": "Owner is unsure of the location; finder is specific. Maroon is written descriptively in Sinhala as dark red.",
+      "category": "glasses",
+      "distance_km": 0.04,
+      "gap_hours": 0.8,
+      "language_pair": "en->si"
+    },
+    {
+      "match_id": "M05",
+      "lost_id": "L-005",
+      "found_id": "F-005",
+      "item": "Samsung Galaxy A34, cracked back, clear cover, child wallpaper",
+      "why_hard": "Deliberately easy. Brand, bus route, crack and wallpaper all agree, so this is a positive control - a matcher that misses this one is broken.",
+      "category": "electronics",
+      "distance_km": 0.086,
+      "gap_hours": 0.6,
+      "language_pair": "si->en"
+    },
+    {
+      "match_id": "M06",
+      "lost_id": "L-006",
+      "found_id": "F-006",
+      "item": "Dark blue long umbrella, white edge piping, wooden handle",
+      "why_hard": "Found the next morning, so a same-day date window will drop it. Colour written as dark blue vs navy.",
+      "category": "umbrella",
+      "distance_km": 0.055,
+      "gap_hours": 15.3,
+      "language_pair": "en->si"
+    },
+    {
+      "match_id": "M07",
+      "lost_id": "L-007",
+      "found_id": "F-007",
+      "item": "Casio watch, silver strap, white dial, scratched glass",
+      "why_hard": "Brand appears in Tamil script as காசியோ, so brand matching needs transliteration rather than string equality.",
+      "category": "electronics",
+      "distance_km": 0.047,
+      "gap_hours": 1.4,
+      "language_pair": "ta->en"
+    },
+    {
+      "match_id": "M08",
+      "lost_id": "L-008",
+      "found_id": "F-008",
+      "item": "Brown leather bifold wallet with driving licence",
+      "why_hard": "The finder discloses the name on the licence, which the owner never mentions. A matcher must not read extra detail on one side as a contradiction.",
+      "category": "wallet",
+      "distance_km": 0.095,
+      "gap_hours": 1.3,
+      "language_pair": "en->ta"
+    },
+    {
+      "match_id": "M09",
+      "lost_id": "L-009",
+      "found_id": "F-009",
+      "item": "Three keys on a ring with black leather fob and brass bell",
+      "why_hard": "Lost and found venues are different places about 1.7km apart, because the owner walked between them. Exact-location matching fails here.",
+      "category": "keys",
+      "distance_km": 1.626,
+      "gap_hours": 1.7,
+      "language_pair": "en->en"
+    },
+    {
+      "match_id": "M10",
+      "lost_id": "L-010",
+      "found_id": "F-010",
+      "item": "Blue document folder with birth certificate and results sheets",
+      "why_hard": "Sinhala to English. Owner says folder, finder says plastic folder with certificates; only the contents tie them.",
+      "category": "document",
+      "distance_km": 0.031,
+      "gap_hours": 0.7,
+      "language_pair": "si->en"
+    }
+  ],
+  "near_miss_pairs": [
+    {
+      "near_miss_id": "N01",
+      "lost_id": "L-011",
+      "found_id": "F-011",
+      "looks_similar_because": "Key bunch lost and found at Maharagama market on the same day, hours apart.",
+      "ruled_out_by": "The lost bunch includes a Honda scooter key; the found bunch has no vehicle key and carries an LED torch.",
+      "category": "keys",
+      "distance_km": 0.087,
+      "expected_verdict": "no_match"
+    },
+    {
+      "near_miss_id": "N02",
+      "lost_id": "L-012",
+      "found_id": "F-012",
+      "looks_similar_because": "Both blue Samsung phones at Panadura station within 40 minutes.",
+      "ruled_out_by": "Lost phone had no cover and a chipped screen corner; the found one has a black silicone cover and an undamaged screen.",
+      "category": "electronics",
+      "distance_km": 0.055,
+      "expected_verdict": "no_match"
+    },
+    {
+      "near_miss_id": "N03",
+      "lost_id": "L-013",
+      "found_id": "F-013",
+      "looks_similar_because": "Handbag left in a three-wheeler and a handbag handed in by a three-wheeler driver, same area and hour, overlapping contents.",
+      "ruled_out_by": "Maroon with a sling strap and reading glasses inside, versus black with no sling strap and no glasses.",
+      "category": "bag",
+      "distance_km": 0.111,
+      "expected_verdict": "no_match"
+    },
+    {
+      "near_miss_id": "N04",
+      "lost_id": "L-014",
+      "found_id": "F-014",
+      "looks_similar_because": "Black wallet lost and found at Matara bus stand the same afternoon.",
+      "ruled_out_by": "Bifold with NIC and a bank card, versus a velcro trifold with neither.",
+      "category": "wallet",
+      "distance_km": 0.071,
+      "expected_verdict": "no_match"
+    },
+    {
+      "near_miss_id": "N05",
+      "lost_id": "L-015",
+      "found_id": "F-015",
+      "looks_similar_because": "Thin gold chain with a broken fastening, same town, same morning.",
+      "ruled_out_by": "The owner describes a small Buddha pendant; the found chain has no pendant at all and weighs less.",
+      "category": "jewellery",
+      "distance_km": 0.063,
+      "expected_verdict": "no_match"
+    },
+    {
+      "near_miss_id": "N06",
+      "lost_id": "L-016",
+      "found_id": "F-016",
+      "looks_similar_because": "Green outer garment left on a canteen chair at Kelaniya on the same day.",
+      "ruled_out_by": "Hooded windcheater with earphones in the pocket, versus a knitted sweater with no hood, no zip, empty pockets.",
+      "category": "clothing",
+      "distance_km": 0.04,
+      "expected_verdict": "no_match"
+    },
+    {
+      "near_miss_id": "N07",
+      "lost_id": "L-017",
+      "found_id": "F-017",
+      "looks_similar_because": "Black umbrella lost and found at Moratuwa station.",
+      "ruled_out_by": "Small three-fold with bank advertising printed on it, versus a plain long-handle umbrella, and a week apart.",
+      "category": "umbrella",
+      "distance_km": 0.047,
+      "expected_verdict": "no_match"
+    },
+    {
+      "near_miss_id": "N08",
+      "lost_id": "L-018",
+      "found_id": "F-018",
+      "looks_similar_because": "Copper bottle with a screw cap left on a park bench, same park, 90 minutes apart.",
+      "ruled_out_by": "Found bottle has an engraved Om symbol and is polished; the lost one has no markings and visible tarnish.",
+      "category": "bottle",
+      "distance_km": 0.071,
+      "expected_verdict": "no_match"
+    },
+    {
+      "near_miss_id": "N09",
+      "lost_id": "L-019",
+      "found_id": "F-019",
+      "looks_similar_because": "Black framed reading glasses lost and found at Nugegoda bus stand.",
+      "ruled_out_by": "Thick frame with square lenses, versus a thin frame with round lenses, a cracked lens and a bent arm. Also a week apart.",
+      "category": "glasses",
+      "distance_km": 0.071,
+      "expected_verdict": "no_match"
+    },
+    {
+      "near_miss_id": "N10",
+      "lost_id": "L-020",
+      "found_id": "F-020",
+      "looks_similar_because": "Blue document folder lost and found on the same campus within 40 minutes.",
+      "ruled_out_by": "Lost folder held a degree certificate and had a name label; the found folder holds commercial price lists and has no label.",
+      "category": "document",
+      "distance_km": 0.08,
+      "expected_verdict": "no_match"
+    }
+  ]
+}

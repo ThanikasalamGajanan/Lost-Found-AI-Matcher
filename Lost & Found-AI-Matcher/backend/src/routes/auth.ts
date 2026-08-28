@@ -27,6 +27,16 @@ authRoutes.post('/signup', asyncHandler(async (req, res) => {
     throw new AppError(error?.message || 'Signup failed', 400);
   }
 
+  // Mirror the user into the local auth schema so the local trigger creates the public.users row
+  await queryOne(
+    `INSERT INTO auth.users (id, email, raw_user_meta_data)
+     VALUES ($1, $2, $3)
+     ON CONFLICT (id) DO UPDATE
+       SET email = EXCLUDED.email,
+           raw_user_meta_data = EXCLUDED.raw_user_meta_data`,
+    [data.user.id, email, JSON.stringify({ full_name })]
+  );
+
   // Issue our own JWT for backend API auth
   const token = jwt.sign(
     { sub: data.user.id, role: 'user', email },
