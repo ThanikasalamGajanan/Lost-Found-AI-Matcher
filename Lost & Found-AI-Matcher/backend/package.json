@@ -10,7 +10,8 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "migrate": "tsx src/db/migrate.ts",
-    "seed": "tsx src/db/seed.ts"
+    "seed": "tsx src/db/seed.ts",
+    "load-test": "tsx src/db/loadTestReports.ts"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.45.0",

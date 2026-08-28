@@ -1,14 +1,31 @@
 'use client';
 
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { ReportForm } from '@/components/ReportForm';
+import { SimilarItems } from '@/components/SimilarItems';
 import { reportsApi, matchesApi } from '@/lib/api';
 import { useAuthStore } from '@/lib/store';
 import toast from 'react-hot-toast';
 
+interface SimilarItem {
+  id: string;
+  category: string;
+  brand: string | null;
+  colour: string | null;
+  description: string;
+  location: string;
+  photo_url: string | null;
+  similarity_score: number;
+}
+
 export default function ReportLostPage() {
   const router = useRouter();
   const { user } = useAuthStore();
+  const [submitted, setSubmitted] = useState(false);
+  const [reportId, setReportId] = useState<string | null>(null);
+  const [similarItems, setSimilarItems] = useState<SimilarItem[]>([]);
+  const [fullMatchCount, setFullMatchCount] = useState<number | null>(null);
 
   const handleSubmit = async (data: Record<string, unknown>) => {
     if (!user) {
@@ -17,23 +34,32 @@ export default function ReportLostPage() {
       return;
     }
 
-    const result = await reportsApi.createLost(data) as { id: string };
-    toast.success('Lost item reported! Running match engine...');
+    const result = await reportsApi.createLost(data) as {
+      id: string;
+      similar_found_items?: SimilarItem[];
+    };
 
-    // Automatically trigger matching
-    try {
-      const { match_count } = await matchesApi.run(result.id, 'lost');
-      if (match_count > 0) {
-        toast.success(`Found ${match_count} potential match(es)!`);
-        router.push(`/matches/${result.id}?type=lost`);
-      } else {
-        toast('No matches yet — we will notify you when one appears.', { icon: '🔔' });
-        router.push('/dashboard');
-      }
-    } catch {
-      toast('Report saved. Matching will run later.');
-      router.push('/dashboard');
+    setReportId(result.id);
+    setSimilarItems(result.similar_found_items || []);
+    setSubmitted(true);
+
+    if ((result.similar_found_items || []).length > 0) {
+      toast.success(`Found ${result.similar_found_items!.length} similar found item(s)!`);
+    } else {
+      toast.success('Lost item reported!');
     }
+
+    // Trigger the full matching engine in the background (non-blocking)
+    matchesApi.run(result.id, 'lost')
+      .then(({ match_count }) => {
+        setFullMatchCount(match_count);
+        if (match_count > (result.similar_found_items?.length || 0)) {
+          toast.success(`Full scan found ${match_count} match(es) — check your matches page.`);
+        }
+      })
+      .catch(() => {
+        // Full matching may fail (e.g. no candidates) — non-fatal
+      });
   };
 
   return (
@@ -42,7 +68,49 @@ export default function ReportLostPage() {
       <p className="text-center text-gray-600 mb-10">
         Fill in the details below and our AI will search for matches.
       </p>
-      <ReportForm type="lost" onSubmit={handleSubmit} />
+
+      {!submitted ? (
+        <ReportForm type="lost" onSubmit={handleSubmit} />
+      ) : (
+        <div className="max-w-2xl mx-auto">
+          {/* Instant embedding results */}
+          <SimilarItems items={similarItems} label="found" />
+
+          {similarItems.length === 0 && (
+            <p className="text-center text-gray-500 mt-8">
+              No similar found items yet — we'll notify you as soon as a match appears.
+            </p>
+          )}
+
+          {/* Actions */}
+          <div className="flex gap-3 justify-center mt-8">
+            {reportId && fullMatchCount !== null && fullMatchCount > 0 && (
+              <button
+                className="btn-primary"
+                onClick={() => router.push(`/matches/${reportId}?type=lost`)}
+              >
+                View All {fullMatchCount} Match(es)
+              </button>
+            )}
+            <button
+              className="btn-secondary"
+              onClick={() => router.push('/dashboard')}
+            >
+              Back to Dashboard
+            </button>
+            <button
+              className="btn-secondary"
+              onClick={() => {
+                setSubmitted(false);
+                setSimilarItems([]);
+                setFullMatchCount(null);
+              }}
+            >
+              Report Another
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

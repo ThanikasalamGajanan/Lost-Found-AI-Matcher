@@ -8,6 +8,19 @@ export const notificationRoutes = Router();
 notificationRoutes.use(authenticate);
 
 // ────────────────────────────────────────────────
+// PATCH /api/notifications/read-all
+// Mark all notifications as read (MUST be before /:id routes).
+// ────────────────────────────────────────────────
+notificationRoutes.patch('/read-all', asyncHandler(async (req: AuthRequest, res) => {
+  await query(
+    `UPDATE notifications SET is_read = true WHERE user_id = $1 AND is_read = false`,
+    [req.userId]
+  );
+
+  res.json({ message: 'All notifications marked as read' });
+}));
+
+// ────────────────────────────────────────────────
 // GET /api/notifications
 // Get the authenticated user's notifications, newest first.
 // ────────────────────────────────────────────────
@@ -57,15 +70,3 @@ notificationRoutes.patch('/:id/read', asyncHandler(async (req: AuthRequest, res)
   res.json({ message: 'Notification marked as read' });
 }));
 
-// ────────────────────────────────────────────────
-// PATCH /api/notifications/read-all
-// Mark all notifications as read.
-// ────────────────────────────────────────────────
-notificationRoutes.patch('/read-all', asyncHandler(async (req: AuthRequest, res) => {
-  await query(
-    `UPDATE notifications SET is_read = true WHERE user_id = $1 AND is_read = false`,
-    [req.userId]
-  );
-
-  res.json({ message: 'All notifications marked as read' });
-}));

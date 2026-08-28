@@ -55,7 +55,6 @@ export interface Match {
   found_item_id: string;
   total_score: number;
   desc_score: number;
-  image_score: number;
   location_score: number;
   time_score: number;
   attr_score: number;
@@ -89,6 +88,14 @@ export interface VerificationAttempt {
   attempt_number: number;
   answer_text: string;
   is_correct?: boolean;
+  created_at: string;
+}
+
+export interface Message {
+  id: string;
+  sender_id: string;
+  sender_name: string;
+  body: string;
   created_at: string;
 }
 
