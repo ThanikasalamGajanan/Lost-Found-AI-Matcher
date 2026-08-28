@@ -61,7 +61,7 @@ matchRoutes.get('/:reportId', asyncHandler(async (req: AuthRequest, res) => {
   if (type === 'lost') {
     matches = await query(
       `SELECT
-        m.id, m.total_score, m.desc_score, m.image_score,
+        m.id, m.total_score, m.desc_score,
         m.location_score, m.time_score, m.attr_score, m.status,
         m.created_at,
         f.id AS found_id, f.category AS found_category,
@@ -77,7 +77,7 @@ matchRoutes.get('/:reportId', asyncHandler(async (req: AuthRequest, res) => {
   } else {
     matches = await query(
       `SELECT
-        m.id, m.total_score, m.desc_score, m.image_score,
+        m.id, m.total_score, m.desc_score,
         m.location_score, m.time_score, m.attr_score, m.status,
         m.created_at,
         l.id AS lost_id, l.category AS lost_category,

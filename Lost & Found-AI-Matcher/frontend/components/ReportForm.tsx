@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { CATEGORIES, COLOURS, BRANDS } from '@/types';
-import { uploadPhoto } from '@/lib/supabase';
+import { reportsApi } from '@/lib/api';
 import { Camera, X } from 'lucide-react';
 import toast from 'react-hot-toast';
 
@@ -40,7 +40,8 @@ export function ReportForm({ type, onSubmit }: ReportFormProps) {
     try {
       let photo_url = '';
       if (photoFile) {
-        photo_url = await uploadPhoto(photoFile);
+        const { photo_url: url } = await reportsApi.uploadPhoto(photoFile);
+        photo_url = url;
       }
 
       const baseData = {

@@ -7,19 +7,30 @@ const openai = new OpenAI({ apiKey: config.openai.apiKey });
 /**
  * Generate a verification question from a found item's private details.
  * The question is designed so only the true owner would know the answer.
+ *
+ * @param excludeFields  Field keys already used in previous questions for
+ *                       this match — the function will prefer a different
+ *                       field so that retries ask a different question.
  */
 export async function generateVerificationQuestion(
   matchId: string,
-  privateDetails: Record<string, string>
+  privateDetails: Record<string, string>,
+  excludeFields?: Set<string>,
 ): Promise<{ id: string; question_text: string }> {
-  const fields = Object.entries(privateDetails);
+  const allFields = Object.entries(privateDetails);
 
-  if (fields.length === 0) {
+  if (allFields.length === 0) {
     throw new Error('No private details available for question generation');
   }
 
-  // Pick a random field to base the question on
-  const [fieldKey, correctAnswer] = fields[Math.floor(Math.random() * fields.length)];
+  // Prefer fields not yet used; fall back to all fields if every field is exhausted
+  const available = excludeFields
+    ? allFields.filter(([key]) => !excludeFields.has(key))
+    : allFields;
+  const pool = available.length > 0 ? available : allFields;
+
+  // Pick a random field from the pool
+  const [fieldKey, correctAnswer] = pool[Math.floor(Math.random() * pool.length)];
 
   // Use LLM to generate a natural-sounding question
   const humanReadableField = fieldKey.replace(/_/g, ' ');

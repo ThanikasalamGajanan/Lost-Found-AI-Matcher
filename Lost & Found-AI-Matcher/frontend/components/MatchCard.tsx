@@ -97,9 +97,8 @@ export function MatchCard({ match, userRole, onVerified }: MatchCardProps) {
       </div>
 
       {/* Score breakdown */}
-      <div className="grid grid-cols-5 gap-2 text-center text-xs text-gray-500 mb-4">
+      <div className="grid grid-cols-4 gap-2 text-center text-xs text-gray-500 mb-4">
         <div><span className="block font-semibold text-gray-700">{match.desc_score}%</span>Description</div>
-        <div><span className="block font-semibold text-gray-700">{match.image_score}%</span>Image</div>
         <div><span className="block font-semibold text-gray-700">{match.location_score}%</span>Location</div>
         <div><span className="block font-semibold text-gray-700">{match.time_score}%</span>Time</div>
         <div><span className="block font-semibold text-gray-700">{match.attr_score}%</span>Attributes</div>
