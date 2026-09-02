@@ -3,16 +3,17 @@
 import { useState } from 'react';
 import type { Match } from '@/types';
 import { verifyApi } from '@/lib/api';
-import { CheckCircle, XCircle, MessageCircle } from 'lucide-react';
+import { CheckCircle, XCircle, ArrowRight, X } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 interface MatchCardProps {
   match: Match;
   userRole: 'claimant' | 'finder' | 'admin';
+  onClaim?: () => void;
   onVerified?: () => void;
 }
 
-export function MatchCard({ match, userRole, onVerified }: MatchCardProps) {
+export function MatchCard({ match, userRole, onClaim, onVerified }: MatchCardProps) {
   const [showVerification, setShowVerification] = useState(false);
   const [question, setQuestion] = useState('');
   const [answer, setAnswer] = useState('');
@@ -23,9 +24,33 @@ export function MatchCard({ match, userRole, onVerified }: MatchCardProps) {
   const scoreColour =
     match.total_score >= 80 ? 'text-green-600' :
     match.total_score >= 60 ? 'text-yellow-600' :
-    'text-gray-500';
+    'text-red-600';
+
+  const scoreBgColour =
+    match.total_score >= 80 ? 'bg-green-500' :
+    match.total_score >= 60 ? 'bg-yellow-500' :
+    'bg-red-500';
+
+  const otherItem = userRole === 'claimant'
+    ? {
+        category: match.found_category,
+        brand: match.found_brand,
+        colour: match.found_colour,
+        description: match.found_description,
+        location: match.found_location,
+        photo: match.found_photo_url,
+      }
+    : {
+        category: match.lost_category,
+        brand: match.lost_brand,
+        colour: match.lost_colour,
+        description: match.lost_description,
+        location: match.lost_location,
+        photo: match.lost_photo_url,
+      };
 
   const handleStartVerification = async () => {
+    onClaim?.();
     try {
       const result = await verifyApi.getQuestion(match.id);
       setQuestion(result.question_text);
@@ -39,8 +64,8 @@ export function MatchCard({ match, userRole, onVerified }: MatchCardProps) {
   const handleSubmitAnswer = async () => {
     setSubmitting(true);
     try {
-      const result = await verifyApi.submitAnswer(match.id, answer) as { id: string; attempt_number: number };
-      setPendingAttemptId(result.id);
+      const result = await verifyApi.submitAnswer(match.id, answer);
+      setPendingAttemptId(result.attempt_id);
       toast.success('Answer submitted! Waiting for the finder to verify.');
       setShowVerification(false);
       setAnswer('');
@@ -59,7 +84,7 @@ export function MatchCard({ match, userRole, onVerified }: MatchCardProps) {
     }
     setSubmitting(true);
     try {
-      const result = await verifyApi.judgeAnswer(match.id, isCorrect, pendingAttemptId) as { result: string; message: string };
+      const result = await verifyApi.judgeAnswer(match.id, isCorrect, pendingAttemptId);
       toast.success(result.message);
       if (isCorrect) {
         setVerified(true);
@@ -74,91 +99,176 @@ export function MatchCard({ match, userRole, onVerified }: MatchCardProps) {
     }
   };
 
-  const otherItem = userRole === 'claimant'
-    ? { category: match.found_category, description: match.found_description, location: match.found_location, photo: match.found_photo_url }
-    : { category: match.lost_category, description: match.lost_description, location: match.lost_location, photo: match.lost_photo_url };
-
   return (
     <div className="card">
-      {/* Score badge */}
-      <div className="flex items-start justify-between mb-4">
-        <div className="flex items-center gap-3">
-          {otherItem.photo && (
-            <img src={otherItem.photo} alt="Item" className="w-16 h-16 rounded-lg object-cover border" />
-          )}
-          <div>
-            <p className="font-medium text-gray-900 capitalize">{otherItem.category || 'Unknown item'}</p>
-            <p className="text-sm text-gray-500">{otherItem.location}</p>
+      {/* Header: thumbnail + chips + score */}
+      <div className="flex items-start gap-4 mb-5">
+        {otherItem.photo ? (
+          <img
+            src={otherItem.photo}
+            alt={otherItem.category || 'Item'}
+            className="w-20 h-20 sm:w-24 sm:h-24 rounded-xl object-cover border flex-shrink-0"
+          />
+        ) : (
+          <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-xl bg-gray-100 flex items-center justify-center flex-shrink-0">
+            <span className="text-2xl">📦</span>
+          </div>
+        )}
+
+        <div className="flex-grow min-w-0">
+          <div className="flex flex-wrap gap-2 mb-2">
+            {otherItem.category && (
+              <span className="badge badge-info capitalize">{otherItem.category}</span>
+            )}
+            {otherItem.colour && (
+              <span className="badge badge-warning capitalize">{otherItem.colour}</span>
+            )}
+            {otherItem.brand && (
+              <span className="badge bg-gray-100 text-gray-700">{otherItem.brand}</span>
+            )}
+          </div>
+
+          <p className="text-sm text-gray-600 line-clamp-2">{otherItem.description}</p>
+
+          <div className="mt-2 text-xs text-gray-500 space-y-0.5">
+            {otherItem.location && <p>📍 {otherItem.location}</p>}
+            <p>🕒 {formatTime(match.created_at)}</p>
           </div>
         </div>
-        <span className={`text-2xl font-bold ${scoreColour}`}>
-          {match.total_score}%
-        </span>
+
+        <div className="flex flex-col items-center flex-shrink-0">
+          <span className={`text-2xl font-bold ${scoreColour}`}>{match.total_score}%</span>
+          <span className="text-xs text-gray-500">match</span>
+        </div>
       </div>
 
-      {/* Score breakdown */}
-      <div className="grid grid-cols-4 gap-2 text-center text-xs text-gray-500 mb-4">
-        <div><span className="block font-semibold text-gray-700">{match.desc_score}%</span>Description</div>
-        <div><span className="block font-semibold text-gray-700">{match.location_score}%</span>Location</div>
-        <div><span className="block font-semibold text-gray-700">{match.time_score}%</span>Time</div>
-        <div><span className="block font-semibold text-gray-700">{match.attr_score}%</span>Attributes</div>
+      {/* Score breakdown bars */}
+      <div className="space-y-3 mb-5">
+        <ScoreBar label="Description" value={match.desc_score} colour={scoreBgColour} />
+        <ScoreBar label="Image" value={match.image_score} colour={scoreBgColour} />
+        <ScoreBar label="Location" value={match.location_score} colour={scoreBgColour} />
+        <ScoreBar label="Time" value={match.time_score} colour={scoreBgColour} />
+        <ScoreBar label="Attributes" value={match.attr_score} colour={scoreBgColour} />
       </div>
-
-      {/* Description preview */}
-      {otherItem.description && (
-        <p className="text-sm text-gray-600 bg-gray-50 rounded-lg p-3 mb-4 line-clamp-3">
-          {otherItem.description}
-        </p>
-      )}
 
       {/* Actions */}
-      <div className="flex gap-3">
+      <div className="flex flex-wrap gap-3">
         {verified ? (
-          <div className="flex items-center gap-2 text-green-600 font-medium">
-            <CheckCircle className="w-5 h-5" />
+          <div className="flex items-center gap-2 text-green-600 font-medium text-sm">
+            <CheckCircle className="w-4 h-4" />
             Verified — contact info unlocked
           </div>
         ) : userRole === 'claimant' ? (
-          !showVerification ? (
-            <button onClick={handleStartVerification} className="btn-primary text-sm flex items-center gap-2">
-              <MessageCircle className="w-4 h-4" /> Start Verification
-            </button>
-          ) : (
-            <div className="w-full space-y-3">
-              <p className="text-sm font-medium text-blue-800 bg-blue-50 rounded-lg p-3">
-                Q: {question}
-              </p>
-              <input
-                type="text"
-                className="input-field"
-                placeholder="Your answer..."
-                value={answer}
-                onChange={(e) => setAnswer(e.target.value)}
-              />
-              <button onClick={handleSubmitAnswer} className="btn-primary text-sm" disabled={submitting || !answer}>
-                {submitting ? 'Submitting...' : 'Submit Answer'}
-              </button>
-            </div>
-          )
+          <button
+            onClick={handleStartVerification}
+            className="btn-primary text-sm flex items-center gap-2"
+          >
+            This is Mine! <ArrowRight className="w-4 h-4" />
+          </button>
         ) : userRole === 'finder' ? (
           <div className="flex gap-3">
             <button
               onClick={() => handleJudge(true)}
-              className="btn-primary text-sm flex items-center gap-1 bg-green-600 hover:bg-green-700"
               disabled={submitting}
+              className="btn-primary text-sm flex items-center gap-1 bg-green-600 hover:bg-green-700 disabled:opacity-50"
             >
               <CheckCircle className="w-4 h-4" /> Correct
             </button>
             <button
               onClick={() => handleJudge(false)}
-              className="btn-danger text-sm flex items-center gap-1"
               disabled={submitting}
+              className="btn-danger text-sm flex items-center gap-1 disabled:opacity-50"
             >
               <XCircle className="w-4 h-4" /> Incorrect
             </button>
           </div>
         ) : null}
       </div>
+
+      {/* Verification modal */}
+      {showVerification && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl p-6 max-w-md w-full shadow-xl">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-bold text-gray-900">Verify this is yours</h3>
+              <button
+                onClick={() => setShowVerification(false)}
+                className="text-gray-400 hover:text-gray-600"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <p className="text-sm text-gray-600 mb-4">
+              The finder has set a private question. Answer correctly to prove ownership.
+            </p>
+            <div className="text-sm font-medium text-blue-800 bg-blue-50 rounded-lg p-3 mb-4">
+              Q: {question}
+            </div>
+            <input
+              type="text"
+              className="input-field mb-4"
+              placeholder="Your answer..."
+              value={answer}
+              onChange={(e) => setAnswer(e.target.value)}
+            />
+            <div className="flex gap-3">
+              <button
+                onClick={() => setShowVerification(false)}
+                className="btn-secondary flex-1 text-sm"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleSubmitAnswer}
+                className="btn-primary flex-1 text-sm"
+                disabled={submitting || !answer.trim()}
+              >
+                {submitting ? 'Submitting...' : 'Submit Answer'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
+}
+
+function ScoreBar({
+  label,
+  value,
+  colour,
+}: {
+  label: string;
+  value: number;
+  colour: string;
+}) {
+  return (
+    <div>
+      <div className="flex justify-between text-xs mb-1">
+        <span className="text-gray-600">{label}</span>
+        <span className="font-medium text-gray-900">{value}%</span>
+      </div>
+      <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
+        <div
+          className={`h-full ${colour} rounded-full transition-all duration-500`}
+          style={{ width: `${value}%` }}
+        />
+      </div>
+    </div>
+  );
+}
+
+function formatTime(dateString: string) {
+  const date = new Date(dateString);
+  const now = new Date();
+  const diffMs = now.getTime() - date.getTime();
+  const diffMins = Math.round(diffMs / 60000);
+  const diffHours = Math.round(diffMs / 3600000);
+  const diffDays = Math.round(diffMs / 86400000);
+
+  if (diffMins < 1) return 'just now';
+  if (diffMins < 60) return `${diffMins}m ago`;
+  if (diffHours < 24) return `${diffHours}h ago`;
+  if (diffDays < 7) return `${diffDays}d ago`;
+  return date.toLocaleDateString();
 }

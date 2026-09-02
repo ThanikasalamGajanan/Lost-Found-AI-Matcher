@@ -55,6 +55,7 @@ export interface Match {
   found_item_id: string;
   total_score: number;
   desc_score: number;
+  image_score: number;
   location_score: number;
   time_score: number;
   attr_score: number;
