@@ -4,9 +4,6 @@ interface FetchOptions extends RequestInit {
   token?: string;
 }
 
-/**
- * Resolves the auth token from the explicit param or localStorage.
- */
 function resolveAuthHeaders(token?: string): Record<string, string> {
   const headers: Record<string, string> = {};
   if (token) {
@@ -18,9 +15,6 @@ function resolveAuthHeaders(token?: string): Record<string, string> {
   return headers;
 }
 
-/**
- * Wrapper around fetch that attaches the auth token and handles errors.
- */
 async function apiFetch<T>(endpoint: string, options: FetchOptions = {}): Promise<T> {
   const { token, headers: customHeaders, ...rest } = options;
 
@@ -40,10 +34,6 @@ async function apiFetch<T>(endpoint: string, options: FetchOptions = {}): Promis
   return response.json();
 }
 
-/**
- * Multipart upload variant — omits Content-Type so the browser sets the
- * boundary automatically for FormData.
- */
 async function apiUpload<T>(endpoint: string, formData: FormData): Promise<T> {
   const headers = resolveAuthHeaders();
 
@@ -61,8 +51,6 @@ async function apiUpload<T>(endpoint: string, formData: FormData): Promise<T> {
   return response.json();
 }
 
-// ─── Auth ──────────────────────────────────────
-
 export interface AuthResponse {
   user: {
     id: string;
@@ -76,29 +64,18 @@ export interface AuthResponse {
 }
 
 export const authApi = {
-  /**
-   * Register a new user account.
-   * Request body: { email, password, full_name }
-   */
   signup: (email: string, password: string, full_name: string) =>
     apiFetch<AuthResponse>('/auth/signup', {
       method: 'POST',
       body: JSON.stringify({ email, password, full_name }),
     }),
 
-  /**
-   * Log in an existing user.
-   * Request body: { email, password }
-   */
   login: (email: string, password: string) =>
-    apiFetch<{ user: { id: string; email: string; role: 'user' | 'admin' }; token: string }>('/auth/login', {
     apiFetch<AuthResponse>('/auth/login', {
       method: 'POST',
       body: JSON.stringify({ email, password }),
     }),
 };
-
-// ─── Reports ───────────────────────────────────
 
 export interface CreateLostReportRequest {
   category: string;
@@ -153,13 +130,7 @@ export interface ReportResponse {
   status: string;
   created_at: string;
   type?: 'lost' | 'found';
-  /**
-   * Returned by the matching-engine branch of the backend.
-   */
   matches?: MatchRunResult[];
-  /**
-   * Returned by the embedding-search branch of the backend.
-   */
   similar_found_items?: SimilarItem[];
   similar_lost_items?: SimilarItem[];
 }
@@ -170,12 +141,6 @@ export interface UserReportsResponse {
 }
 
 export const reportsApi = {
-  /**
-   * Upload a photo to the backend.
-   * Backend endpoint: POST /api/upload
-   * Backend returns: { url, fileName }
-   * We also expose `photo_url` for backward compatibility with older form code.
-   */
   uploadPhoto: async (file: File) => {
     const formData = new FormData();
     formData.append('photo', file);
@@ -183,35 +148,17 @@ export const reportsApi = {
     return { ...data, photo_url: data.url };
   },
 
-  /**
-   * Create a lost-item report.
-   * Backend endpoint: POST /api/reports/lost
-   */
   createLost: (data: Record<string, unknown>) =>
     apiFetch<ReportResponse>('/reports/lost', { method: 'POST', body: JSON.stringify(data) }),
 
-  /**
-   * Create a found-item report.
-   * Backend endpoint: POST /api/reports/found
-   */
   createFound: (data: Record<string, unknown>) =>
     apiFetch<ReportResponse>('/reports/found', { method: 'POST', body: JSON.stringify(data) }),
 
-  /**
-   * Get a single report by ID (lost or found).
-   * Backend endpoint: GET /api/reports/:id
-   */
   getById: (id: string) => apiFetch<ReportResponse>(`/reports/${id}`),
 
-  /**
-   * List all reports belonging to a user.
-   * Backend endpoint: GET /api/reports/user/:userId
-   */
   getByUser: (userId: string) =>
     apiFetch<UserReportsResponse>(`/reports/user/${userId}`),
 };
-
-// ─── Matches ───────────────────────────────────
 
 export interface MatchRunResult {
   lost_item_id: string;
@@ -242,7 +189,6 @@ export interface MatchListItem {
   attr_score: number;
   status: string;
   created_at: string;
-  // When the report is a lost item, the API returns found_* fields.
   found_id?: string;
   found_category?: string;
   found_brand?: string | null;
@@ -251,7 +197,6 @@ export interface MatchListItem {
   found_location?: string;
   found_photo_url?: string | null;
   found_at?: string;
-  // When the report is a found item, the API returns lost_* fields.
   lost_id?: string;
   lost_category?: string;
   lost_brand?: string | null;
@@ -263,24 +208,14 @@ export interface MatchListItem {
 }
 
 export const matchesApi = {
-  /**
-   * Trigger the full matching engine for a report.
-   * Backend endpoint: POST /api/matches/run/:reportId?type=lost|found
-   */
   run: (reportId: string, type: 'lost' | 'found') =>
     apiFetch<RunMatchesResponse>(`/matches/run/${reportId}?type=${type}`, {
       method: 'POST',
     }),
 
-  /**
-   * Get existing matches for a report.
-   * Backend endpoint: GET /api/matches/:reportId?type=lost|found
-   */
   getByReport: (reportId: string, type: 'lost' | 'found') =>
     apiFetch<MatchListItem[]>(`/matches/${reportId}?type=${type}`),
 };
-
-// ─── Verification ──────────────────────────────
 
 export interface VerificationQuestion {
   question_id: string;
@@ -304,35 +239,21 @@ export interface VerificationJudgeResponse {
 }
 
 export const verifyApi = {
-  /**
-   * Get the current verification question for a match.
-   * Backend endpoint: GET /api/verify/:matchId/question
-   */
   getQuestion: (matchId: string) =>
     apiFetch<VerificationQuestion>(`/verify/${matchId}/question`),
 
-  /**
-   * Submit an answer to the current verification question.
-   * Backend endpoint: POST /api/verify/:matchId/answer
-   */
   submitAnswer: (matchId: string, answer: string) =>
     apiFetch<VerificationAnswerResponse>(`/verify/${matchId}/answer`, {
       method: 'POST',
       body: JSON.stringify({ answer }),
     }),
 
-  /**
-   * Finder (or admin) override for a verification attempt.
-   * Backend endpoint: POST /api/verify/:matchId/judge
-   */
   judgeAnswer: (matchId: string, is_correct: boolean, attempt_id: string) =>
     apiFetch<VerificationJudgeResponse>(`/verify/${matchId}/judge`, {
       method: 'POST',
       body: JSON.stringify({ is_correct, attempt_id }),
     }),
 };
-
-// ─── Notifications ─────────────────────────────
 
 export interface Notification {
   id: string;
@@ -354,35 +275,20 @@ export interface NotificationsResponse {
 }
 
 export const notificationsApi = {
-  /**
-   * List the current user's notifications.
-   * Backend endpoint: GET /api/notifications?page=&limit=&unread=
-   */
   getAll: (page = 1, limit = 20, unreadOnly = false) =>
     apiFetch<NotificationsResponse>(
       `/notifications?page=${page}&limit=${limit}&unread=${unreadOnly}`
     ),
 
-  /**
-   * Mark a single notification as read.
-   * Backend endpoint: PATCH /api/notifications/:id/read
-   */
   markRead: (id: string) =>
     apiFetch<{ message: string }>(`/notifications/${id}/read`, { method: 'PATCH' }),
 
-  /**
-   * Mark all notifications as read.
-   * Backend endpoint: PATCH /api/notifications/read-all
-   */
   markAllRead: () =>
     apiFetch('/notifications/read-all', { method: 'PATCH' }),
 
   getUnreadCount: () =>
     apiFetch<{ unread_count: number }>('/notifications/count'),
-    apiFetch<{ message: string }>('/notifications/read-all', { method: 'PATCH' }),
 };
-
-// ─── Messages ──────────────────────────────────
 
 export interface Message {
   id: string;
@@ -397,25 +303,15 @@ export interface MessagesResponse {
 }
 
 export const messagesApi = {
-  /**
-   * Fetch the message thread for an approved match.
-   * Backend endpoint: GET /api/messages/:matchId
-   */
-  getMessages: (matchId: string) =>
+  getThread: (matchId: string) =>
     apiFetch<MessagesResponse>(`/messages/${matchId}`),
 
-  /**
-   * Send a message in a match thread.
-   * Backend endpoint: POST /api/messages/:matchId
-   */
-  sendMessage: (matchId: string, body: string) =>
+  send: (matchId: string, body: string) =>
     apiFetch<Message>(`/messages/${matchId}`, {
       method: 'POST',
       body: JSON.stringify({ body }),
     }),
 };
-
-// ─── Admin ─────────────────────────────────────
 
 export interface AdminStatsResponse {
   lost_items: { total: string; active: string };
@@ -480,25 +376,13 @@ export interface AdminDisputedResponse {
 }
 
 export const adminApi = {
-  /**
-   * Get admin dashboard statistics.
-   * Backend endpoint: GET /api/admin/stats
-   */
   getStats: () => apiFetch<AdminStatsResponse>('/admin/stats'),
 
-  /**
-   * List matches for admin review with optional status filter.
-   * Backend endpoint: GET /api/admin/matches?page=&limit=&status=
-   *
-   * Signature accepts (page, status) for the existing admin page as well as
-   * the documented (page, limit, status) order.
-   */
   getMatches: (page: number | string = 1, limitOrStatus?: number | string, status?: string) => {
     let limit = 20;
     let finalStatus: string | undefined;
 
     if (typeof limitOrStatus === 'string') {
-      // Called as getMatches(page, status)
       finalStatus = limitOrStatus;
     } else if (typeof limitOrStatus === 'number') {
       limit = limitOrStatus;
@@ -510,24 +394,12 @@ export const adminApi = {
     );
   },
 
-  /**
-   * Approve a match.
-   * Backend endpoint: POST /api/admin/matches/:id/approve
-   */
   approveMatch: (id: string) =>
     apiFetch<{ message: string }>(`/admin/matches/${id}/approve`, { method: 'POST' }),
 
-  /**
-   * Reject a match.
-   * Backend endpoint: POST /api/admin/matches/:id/reject
-   */
   rejectMatch: (id: string) =>
     apiFetch<{ message: string }>(`/admin/matches/${id}/reject`, { method: 'POST' }),
 
-  /**
-   * Update an item's status (e.g. returned/closed).
-   * Backend endpoint: PATCH /api/admin/items/:id/status
-   */
   updateItemStatus: (
     id: string,
     body: { status: string; type: 'lost' | 'found'; reason?: string }
@@ -537,27 +409,15 @@ export const adminApi = {
       body: JSON.stringify(body),
     }),
 
-  /**
-   * List disputed / fraud-flagged matches with verification history.
-   * Backend endpoint: GET /api/admin/disputed
-   */
   getDisputed: (page = 1, limit = 20) =>
     apiFetch<AdminDisputedResponse>(`/admin/disputed?page=${page}&limit=${limit}`),
 
-  /**
-   * Flag a match as fraudulent.
-   * Backend endpoint: POST /api/admin/matches/:id/flag
-   */
   flagMatch: (id: string, reason: string) =>
     apiFetch<{ message: string }>(`/admin/matches/${id}/flag`, {
       method: 'POST',
       body: JSON.stringify({ reason }),
     }),
 
-  /**
-   * Remove the fraud flag from a match.
-   * Backend endpoint: POST /api/admin/matches/:id/unflag
-   */
   unflagMatch: (id: string) =>
     apiFetch<{ message: string }>(`/admin/matches/${id}/unflag`, { method: 'POST' }),
 };

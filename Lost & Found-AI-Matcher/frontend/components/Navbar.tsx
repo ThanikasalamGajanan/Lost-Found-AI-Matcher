@@ -4,21 +4,11 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useAuthStore } from '@/lib/store';
 import { notificationsApi } from '@/lib/api';
-import { Bell, LogOut, User, Menu, X } from 'lucide-react';
-import { useEffect, useState } from 'react';
-import {
-  Bell,
-  LogOut,
-  User,
-  Menu,
-  X,
-  LayoutDashboard,
-  Search,
-  PlusCircle,
-} from 'lucide-react';
+import { Bell, LogOut, User, Menu, X, LayoutDashboard, Search, PlusCircle } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
 const navLinks = [
+
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { href: '/report/lost', label: 'Report Lost', icon: PlusCircle },
   { href: '/report/found', label: 'Report Found', icon: Search },
@@ -52,29 +42,10 @@ export function Navbar() {
       fetchCount();
     }
 
-    const interval = setInterval(fetchCount, 30000);
+        const interval = setInterval(fetchCount, 30000);
     return () => clearInterval(interval);
   }, [user, pathname]);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
-  const [unreadCount, setUnreadCount] = useState(0);
-
-  useEffect(() => {
-    if (!user) return;
-
-    let cancelled = false;
-    notificationsApi
-      .getAll(1, 1, true)
-      .then((data) => {
-        if (!cancelled) setUnreadCount(data.unread_count);
-      })
-      .catch(() => {
-        // Non-fatal: bell simply shows no badge.
-      });
-
-    return () => {
-      cancelled = true;
-    };
-  }, [user]);
 
   const handleLogout = () => {
     logout();
@@ -174,13 +145,14 @@ export function Navbar() {
                       <LogOut className="w-4 h-4" /> Log Out
                     </button>
                   </div>
-                )}
+                                )}
               </div>
-            ) : (
-              <Link href="/login" className="btn-primary text-sm px-4 py-2 ml-3">
-                Log In
-              </Link>
-            )}
+            </div>
+          ) : (
+            <Link href="/login" className="btn-primary text-sm px-4 py-2 ml-3">
+              Log In
+            </Link>
+          )}
           </div>
 
           {/* Mobile hamburger */}

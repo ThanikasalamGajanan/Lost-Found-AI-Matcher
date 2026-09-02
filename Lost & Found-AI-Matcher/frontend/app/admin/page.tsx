@@ -102,11 +102,20 @@ export default function AdminPage() {
     } catch { toast.error('Failed to unflag'); }
   };
 
-  const handleMarkReturned = async (m: AdminMatch) => {
+    const handleMarkReturned = async (m: AdminMatch) => {
     try {
       await Promise.all([
-        adminApi.updateItemStatus(m.lost_id, 'returned', 'lost', 'Item returned to owner'),
-        adminApi.updateItemStatus(m.found_id, 'returned', 'found', 'Item returned to owner'),
+        adminApi.updateItemStatus(m.lost_id, {
+          status: 'returned',
+          type: 'lost',
+          reason: 'Item returned to owner',
+        }),
+        adminApi.updateItemStatus(m.found_id, {
+          status: 'returned',
+          type: 'found',
+         
+ reason: 'Item returned to owner',
+        }),
       ]);
       toast.success('Items marked as returned');
       fetchData();

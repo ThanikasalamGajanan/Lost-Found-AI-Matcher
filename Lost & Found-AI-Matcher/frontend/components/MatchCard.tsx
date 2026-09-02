@@ -4,8 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import type { Match } from '@/types';
 import { verifyApi } from '@/lib/api';
-import { CheckCircle, XCircle, MessageCircle, Send, AlertTriangle, PackageCheck } from 'lucide-react';
-import { CheckCircle, XCircle, ArrowRight, X } from 'lucide-react';
+import { CheckCircle, XCircle, MessageCircle, Send, AlertTriangle, PackageCheck, X } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 interface MatchCardProps {
@@ -84,7 +83,6 @@ export function MatchCard({ match, userRole, onClaim, onVerified }: MatchCardPro
         setPendingAttemptId('');
         toast.error(result.message);
       } else {
-        // Incorrect: keep the verification panel open with the new question.
         setPendingAttemptId(result.attempt_id);
         if (result.new_question) {
           setQuestion(result.new_question.question_text);
@@ -94,10 +92,6 @@ export function MatchCard({ match, userRole, onClaim, onVerified }: MatchCardPro
         setAnswer('');
         toast.error(result.message);
       }
-      setPendingAttemptId(result.attempt_id);
-      toast.success('Answer submitted! Waiting for the finder to verify.');
-      setShowVerification(false);
-      setAnswer('');
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'Failed to submit';
       toast.error(message);
@@ -125,7 +119,6 @@ export function MatchCard({ match, userRole, onClaim, onVerified }: MatchCardPro
         setPendingAttemptId('');
         setShowVerification(false);
       } else {
-        // Finder marked incorrect: a new question is generated for the claimant.
         setPendingAttemptId('');
         if (result.new_question) {
           setQuestion(result.new_question.question_text);
@@ -141,10 +134,6 @@ export function MatchCard({ match, userRole, onClaim, onVerified }: MatchCardPro
       setSubmitting(false);
     }
   };
-
-  const otherItem = userRole === 'claimant'
-    ? { category: match.found_category, description: match.found_description, location: match.found_location, photo: match.found_photo_url }
-    : { category: match.lost_category, description: match.lost_description, location: match.lost_location, photo: match.lost_photo_url };
 
   const isDisputed = match.status === 'disputed';
   const isReturned = match.lost_status === 'returned' || match.found_status === 'returned';
@@ -186,6 +175,12 @@ export function MatchCard({ match, userRole, onClaim, onVerified }: MatchCardPro
           </div>
         </div>
 
+        <div className="flex flex-col items-center flex-shrink-0">
+          <span className={`text-2xl font-bold ${scoreColour}`}>{match.total_score}%</span>
+          <span className="text-xs text-gray-500">match</span>
+        </div>
+      </div>
+
       {/* Score breakdown */}
       <div className="grid grid-cols-5 gap-2 text-center text-xs text-gray-500 mb-4">
         <div><span className="block font-semibold text-gray-700">{match.desc_score}%</span>Description</div>
@@ -193,10 +188,6 @@ export function MatchCard({ match, userRole, onClaim, onVerified }: MatchCardPro
         <div><span className="block font-semibold text-gray-700">{match.location_score}%</span>Location</div>
         <div><span className="block font-semibold text-gray-700">{match.time_score}%</span>Time</div>
         <div><span className="block font-semibold text-gray-700">{match.attr_score}%</span>Attributes</div>
-        <div className="flex flex-col items-center flex-shrink-0">
-          <span className={`text-2xl font-bold ${scoreColour}`}>{match.total_score}%</span>
-          <span className="text-xs text-gray-500">match</span>
-        </div>
       </div>
 
       {/* Score breakdown bars */}
@@ -289,36 +280,6 @@ export function MatchCard({ match, userRole, onClaim, onVerified }: MatchCardPro
           ) : (
             <p className="text-sm text-gray-500">Waiting for the claimant to answer the verification question.</p>
           )
-      <div className="flex flex-wrap gap-3">
-        {verified ? (
-          <div className="flex items-center gap-2 text-green-600 font-medium text-sm">
-            <CheckCircle className="w-4 h-4" />
-            Verified — contact info unlocked
-          </div>
-        ) : userRole === 'claimant' ? (
-          <button
-            onClick={handleStartVerification}
-            className="btn-primary text-sm flex items-center gap-2"
-          >
-            This is Mine! <ArrowRight className="w-4 h-4" />
-          </button>
-        ) : userRole === 'finder' ? (
-          <div className="flex gap-3">
-            <button
-              onClick={() => handleJudge(true)}
-              disabled={submitting}
-              className="btn-primary text-sm flex items-center gap-1 bg-green-600 hover:bg-green-700 disabled:opacity-50"
-            >
-              <CheckCircle className="w-4 h-4" /> Correct
-            </button>
-            <button
-              onClick={() => handleJudge(false)}
-              disabled={submitting}
-              className="btn-danger text-sm flex items-center gap-1 disabled:opacity-50"
-            >
-              <XCircle className="w-4 h-4" /> Incorrect
-            </button>
-          </div>
         ) : null}
       </div>
 
