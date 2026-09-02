@@ -93,6 +93,23 @@ verifyRoutes.post(
     const { matchId } = req.params;
     const { answer } = req.body;
 
+    // Only the claimant (lost-item owner) may submit an answer
+    const match = await queryOne<{ claimant_id: string }>(
+      `SELECT l.user_id AS claimant_id
+       FROM matches m
+       JOIN lost_items l ON l.id = m.lost_item_id
+       WHERE m.id = $1`,
+      [matchId]
+    );
+
+    if (!match) {
+      throw new AppError('Match not found', 404);
+    }
+
+    if (match.claimant_id !== req.userId && req.userRole !== 'admin') {
+      throw new AppError('Access denied', 403);
+    }
+
     // Get the latest unanswered question for this match
     const question = await queryOne<{
       id: string;

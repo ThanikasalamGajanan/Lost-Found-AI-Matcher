@@ -91,6 +91,7 @@ export const authApi = {
    * Request body: { email, password }
    */
   login: (email: string, password: string) =>
+    apiFetch<{ user: { id: string; email: string; role: 'user' | 'admin' }; token: string }>('/auth/login', {
     apiFetch<AuthResponse>('/auth/login', {
       method: 'POST',
       body: JSON.stringify({ email, password }),
@@ -374,6 +375,10 @@ export const notificationsApi = {
    * Backend endpoint: PATCH /api/notifications/read-all
    */
   markAllRead: () =>
+    apiFetch('/notifications/read-all', { method: 'PATCH' }),
+
+  getUnreadCount: () =>
+    apiFetch<{ unread_count: number }>('/notifications/count'),
     apiFetch<{ message: string }>('/notifications/read-all', { method: 'PATCH' }),
 };
 

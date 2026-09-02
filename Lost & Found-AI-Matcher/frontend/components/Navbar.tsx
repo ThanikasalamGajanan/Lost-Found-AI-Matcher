@@ -1,8 +1,11 @@
 'use client';
 
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { useAuthStore } from '@/lib/store';
 import { notificationsApi } from '@/lib/api';
+import { Bell, LogOut, User, Menu, X } from 'lucide-react';
+import { useEffect, useState } from 'react';
 import {
   Bell,
   LogOut,
@@ -24,7 +27,34 @@ const navLinks = [
 
 export function Navbar() {
   const { user, logout } = useAuthStore();
+  const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [unreadCount, setUnreadCount] = useState(0);
+
+  useEffect(() => {
+    if (!user) {
+      setUnreadCount(0);
+      return;
+    }
+
+    const fetchCount = async () => {
+      try {
+        const data = await notificationsApi.getUnreadCount();
+        setUnreadCount(data.unread_count);
+      } catch { /* silent */ }
+    };
+
+    // Clear badge when the user opens the notifications page.
+    if (pathname === '/notifications') {
+      notificationsApi.markAllRead().catch(() => {});
+      setUnreadCount(0);
+    } else {
+      fetchCount();
+    }
+
+    const interval = setInterval(fetchCount, 30000);
+    return () => clearInterval(interval);
+  }, [user, pathname]);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
 
@@ -84,6 +114,19 @@ export function Navbar() {
             )}
 
             {user ? (
+              <div className="flex items-center gap-4">
+                <Link href="/notifications" className="relative text-gray-500 hover:text-primary-600">
+                  <Bell className="w-5 h-5" />
+                  {unreadCount > 0 && (
+                    <span className="absolute -top-1.5 -right-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] font-medium text-white">
+                      {unreadCount > 99 ? '99+' : unreadCount}
+                    </span>
+                  )}
+                </Link>
+                <div className="flex items-center gap-2 text-sm text-gray-700">
+                  <User className="w-4 h-4" />
+                  {user.full_name || user.email}
+                </div>
               <div className="relative ml-3">
                 <button
                   onClick={() => setUserMenuOpen(!userMenuOpen)}

@@ -69,12 +69,14 @@ export interface Match {
   found_description?: string;
   found_location?: string;
   found_photo_url?: string;
+  found_status?: string;
   lost_category?: string;
   lost_brand?: string;
   lost_colour?: string;
   lost_description?: string;
   lost_location?: string;
   lost_photo_url?: string;
+  lost_status?: string;
 }
 
 export type MatchStatus = 'pending' | 'approved' | 'rejected' | 'disputed';
