@@ -1,5 +1,6 @@
 import { queryOne } from '../db/pool.js';
 import { sendEmail } from './emailService.js';
+import { config } from '../config/index.js';
 
 type NotificationType =
   | 'new_match'
@@ -43,7 +44,7 @@ export async function createNotification(
       await sendEmail({
         to: user.email,
         subject: title,
-        html: buildEmailTemplate(user.full_name, message, type),
+        html: buildEmailTemplate(user.full_name, message, type, matchId),
       });
 
       // Mark email as sent
@@ -66,9 +67,13 @@ export async function createNotification(
 function buildEmailTemplate(
   userName: string,
   message: string,
-  type: NotificationType
+  type: NotificationType,
+  matchId?: string
 ): string {
   const accentColour = type === 'new_match' ? '#22c55e' : '#3b82f6';
+  const actionUrl = matchId
+    ? `${config.frontendUrl}/matches/${matchId}`
+    : `${config.frontendUrl}/notifications`;
 
   return `
 <!DOCTYPE html>
@@ -82,7 +87,7 @@ function buildEmailTemplate(
     <p>Hi ${userName},</p>
     <p>${message}</p>
     <p style="margin-top: 24px;">
-      <a href="#" style="display: inline-block; background: ${accentColour}; color: white; padding: 10px 24px; border-radius: 6px; text-decoration: none;">
+      <a href="${actionUrl}" style="display: inline-block; background: ${accentColour}; color: white; padding: 10px 24px; border-radius: 6px; text-decoration: none;">
         View in App
       </a>
     </p>

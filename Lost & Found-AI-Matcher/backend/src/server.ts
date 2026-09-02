@@ -12,17 +12,21 @@ import { matchRoutes } from './routes/matches.js';
 import { verifyRoutes } from './routes/verify.js';
 import { adminRoutes } from './routes/admin.js';
 import { notificationRoutes } from './routes/notifications.js';
-<<<<<<< HEAD
 import { uploadRoutes } from './routes/upload.js';
-=======
 import { messageRoutes } from './routes/messages.js';
->>>>>>> 99f341f9622e809795d76467f394e1e52ab3a38e
 
 const app = express();
 
 // ── Global Middleware ──────────────────────────
 app.use(helmet());
-app.use(cors({ origin: config.frontendUrl, credentials: true }));
+
+// Allow the configured frontend URL plus any extra origins supplied via CORS_ORIGINS.
+const corsOrigins = [
+  config.frontendUrl,
+  ...(process.env.CORS_ORIGINS?.split(',').map((o) => o.trim()).filter(Boolean) || []),
+];
+app.use(cors({ origin: corsOrigins, credentials: true }));
+
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
 app.use(morgan(config.nodeEnv === 'production' ? 'combined' : 'dev'));
@@ -47,11 +51,8 @@ app.use('/api/matches', matchRoutes);
 app.use('/api/verify', verifyRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/notifications', notificationRoutes);
-<<<<<<< HEAD
 app.use('/api/upload', uploadRoutes);
-=======
 app.use('/api/messages', messageRoutes);
->>>>>>> 99f341f9622e809795d76467f394e1e52ab3a38e
 
 // ── Error Handling ────────────────────────────
 app.use(errorHandler);

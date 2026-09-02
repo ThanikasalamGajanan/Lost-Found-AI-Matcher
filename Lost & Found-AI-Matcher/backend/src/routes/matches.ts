@@ -47,6 +47,7 @@ matchRoutes.post('/run/:reportId', asyncHandler(async (req: AuthRequest, res) =>
 // ────────────────────────────────────────────────
 // GET /api/matches/:reportId
 // Get all existing matches for a report, sorted by score descending.
+// Only the report owner or an admin may view its matches.
 // ────────────────────────────────────────────────
 matchRoutes.get('/:reportId', asyncHandler(async (req: AuthRequest, res) => {
   const { reportId } = req.params;
@@ -54,6 +55,21 @@ matchRoutes.get('/:reportId', asyncHandler(async (req: AuthRequest, res) => {
 
   if (!type || !['lost', 'found'].includes(type)) {
     throw new AppError('Query param "type" must be "lost" or "found"', 400);
+  }
+
+  // Verify the user owns this report (or is an admin)
+  const table = type === 'lost' ? 'lost_items' : 'found_items';
+  const report = await queryOne<{ user_id: string }>(
+    `SELECT user_id FROM ${table} WHERE id = $1`,
+    [reportId]
+  );
+
+  if (!report) {
+    throw new AppError('Report not found', 404);
+  }
+
+  if (report.user_id !== req.userId && req.userRole !== 'admin') {
+    throw new AppError('Access denied', 403);
   }
 
   let matches;
@@ -67,7 +83,8 @@ matchRoutes.get('/:reportId', asyncHandler(async (req: AuthRequest, res) => {
         f.id AS found_id, f.category AS found_category,
         f.brand AS found_brand, f.colour AS found_colour,
         f.description AS found_description, f.location AS found_location,
-        f.photo_url AS found_photo_url, f.found_at
+        f.photo_url AS found_photo_url, f.found_at,
+        f.status AS found_status
       FROM matches m
       JOIN found_items f ON f.id = m.found_item_id
       WHERE m.lost_item_id = $1
@@ -83,7 +100,8 @@ matchRoutes.get('/:reportId', asyncHandler(async (req: AuthRequest, res) => {
         l.id AS lost_id, l.category AS lost_category,
         l.brand AS lost_brand, l.colour AS lost_colour,
         l.description AS lost_description, l.location AS lost_location,
-        l.photo_url AS lost_photo_url, l.lost_at
+        l.photo_url AS lost_photo_url, l.lost_at,
+        l.status AS lost_status
       FROM matches m
       JOIN lost_items l ON l.id = m.lost_item_id
       WHERE m.found_item_id = $1
