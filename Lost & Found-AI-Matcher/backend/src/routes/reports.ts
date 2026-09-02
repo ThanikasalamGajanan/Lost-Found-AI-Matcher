@@ -4,12 +4,9 @@ import { asyncHandler, AppError } from '../middleware/errorHandler.js';
 import { validateBody, lostReportSchema, foundReportSchema } from '../middleware/validate.js';
 import { query, queryOne } from '../db/pool.js';
 import { generateEmbedding, extractStructuredFields } from '../services/llmService.js';
-<<<<<<< HEAD
 import { runMatchingEngine } from '../services/matchingEngine.js';
-=======
 import { upload, processAndUpload } from '../services/uploadService.js';
 import { findSimilarLostItems, findSimilarFoundItems } from '../services/embeddingSearch.js';
->>>>>>> 99f341f9622e809795d76467f394e1e52ab3a38e
 
 export const reportRoutes = Router();
 
@@ -147,7 +144,6 @@ reportRoutes.post(
            photo_url, identifying_info]
     );
 
-<<<<<<< HEAD
     // Run matching engine non-blocking: report is still returned if matching fails
     let matches: Awaited<ReturnType<typeof runMatchingEngine>> = [];
     try {
@@ -156,8 +152,6 @@ reportRoutes.post(
       console.error('Matching engine failed for lost report:', matchErr);
     }
 
-    res.status(201).json({ ...result, matches });
-=======
     // Immediately search for similar found items using the embedding
     let similarItems: unknown[] = [];
     if (embedding) {
@@ -170,9 +164,9 @@ reportRoutes.post(
 
     res.status(201).json({
       ...result as Record<string, unknown>,
+      matches,
       similar_found_items: similarItems,
     });
->>>>>>> 99f341f9622e809795d76467f394e1e52ab3a38e
   })
 );
 
@@ -226,7 +220,6 @@ reportRoutes.post(
            photo_url, JSON.stringify(private_details || {})]
     );
 
-<<<<<<< HEAD
     // Run matching engine non-blocking: report is still returned if matching fails
     let matches: Awaited<ReturnType<typeof runMatchingEngine>> = [];
     try {
@@ -235,8 +228,6 @@ reportRoutes.post(
       console.error('Matching engine failed for found report:', matchErr);
     }
 
-    res.status(201).json({ ...result, matches });
-=======
     // Immediately search for similar lost items using the embedding
     let similarItems: unknown[] = [];
     if (embedding) {
@@ -249,14 +240,13 @@ reportRoutes.post(
 
     res.status(201).json({
       ...result as Record<string, unknown>,
+      matches,
       similar_lost_items: similarItems,
     });
->>>>>>> 99f341f9622e809795d76467f394e1e52ab3a38e
   })
 );
 
 // ────────────────────────────────────────────────
-<<<<<<< HEAD
 // GET /api/reports/user/:userId
 // MUST be defined before /:id so Express does not treat "user" as an ID.
 // ────────────────────────────────────────────────
@@ -286,7 +276,9 @@ reportRoutes.get('/user/:userId', asyncHandler(async (req: AuthRequest, res) => 
     lost: lostItems,
     found: foundItems,
   });
-=======
+}));
+
+// ────────────────────────────────────────────────
 // GET /api/reports/found/:id
 // Public view of a found item — hides private_details
 // (the identifying fields used for verification questions).
@@ -322,7 +314,6 @@ reportRoutes.get('/found/:id', asyncHandler(async (req: AuthRequest, res) => {
     // Public view — private_details explicitly withheld
     res.json({ ...record, private_details: null });
   }
->>>>>>> 99f341f9622e809795d76467f394e1e52ab3a38e
 }));
 
 // ────────────────────────────────────────────────

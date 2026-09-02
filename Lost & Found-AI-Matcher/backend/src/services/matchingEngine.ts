@@ -1,6 +1,6 @@
 import { query, queryOne } from '../db/pool.js';
 import { config } from '../config/index.js';
-import { cosineSimilarity } from './llmService.js';
+import { cosineSimilarity, imageSimilarity } from './llmService.js';
 import { locationSimilarity, timeSimilarity, attributeSimilarity } from '../utils/similarity.js';
 import { createNotification } from './notificationService.js';
 
@@ -24,6 +24,7 @@ interface MatchResult {
   found_item_id: string;
   total_score: number;
   desc_score: number;
+  image_score: number;
   location_score: number;
   time_score: number;
   attr_score: number;
@@ -115,9 +116,16 @@ export async function runMatchingEngine(
       { category: candidate.category, brand: candidate.brand, colour: candidate.colour }
     );
 
+    // --- Image similarity (25%) — only when both items have photos ---
+    let imageScore = 50; // neutral default
+    if (source.photo_url && candidate.photo_url) {
+      imageScore = await imageSimilarity(source.photo_url, candidate.photo_url);
+    }
+
     // --- Weighted total (0–100) ---
     const totalScore = Math.round(
       descScore * weights.description +
+      imageScore * weights.image +
       locScore * weights.location +
       tScore * weights.time +
       attrScore * weights.attributes
@@ -130,6 +138,7 @@ export async function runMatchingEngine(
         found_item_id: type === 'found' ? source.id : candidate.id,
         total_score: totalScore,
         desc_score: descScore,
+        image_score: imageScore,
         location_score: locScore,
         time_score: tScore,
         attr_score: attrScore,
@@ -144,19 +153,19 @@ export async function runMatchingEngine(
   for (const match of results) {
     await query(
       `INSERT INTO matches (lost_item_id, found_item_id, total_score, desc_score, image_score, location_score, time_score, attr_score)
-       VALUES ($1, $2, $3, $4, NULL, $5, $6, $7)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
        ON CONFLICT (lost_item_id, found_item_id)
        DO UPDATE SET
          total_score = EXCLUDED.total_score,
          desc_score = EXCLUDED.desc_score,
-         image_score = NULL,
+         image_score = EXCLUDED.image_score,
          location_score = EXCLUDED.location_score,
          time_score = EXCLUDED.time_score,
          attr_score = EXCLUDED.attr_score,
          status = 'pending'`,
       [
         match.lost_item_id, match.found_item_id, match.total_score,
-        match.desc_score, match.location_score,
+        match.desc_score, match.image_score, match.location_score,
         match.time_score, match.attr_score,
       ]
     );

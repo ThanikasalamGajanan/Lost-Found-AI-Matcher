@@ -1,7 +1,8 @@
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 import { config } from '../config/index.js';
-import { AppError } from './errorHandler.js';
+import { AppError, asyncHandler } from './errorHandler.js';
+import { queryOne } from '../db/pool.js';
 
 export interface AuthRequest extends Request {
   userId?: string;
@@ -37,10 +38,21 @@ export const authenticate = (req: AuthRequest, _res: Response, next: NextFunctio
 
 /**
  * Require admin role — must be used after authenticate middleware.
+ * Verifies the role against the database, not just the JWT claim.
  */
-export const requireAdmin = (req: AuthRequest, _res: Response, next: NextFunction): void => {
-  if (req.userRole !== 'admin') {
+export const requireAdmin = asyncHandler(async (req: AuthRequest, _res: Response, next: NextFunction): Promise<void> => {
+  if (!req.userId) {
+    throw new AppError('Authentication required', 401);
+  }
+
+  const user = await queryOne<{ role: string }>(
+    'SELECT role FROM users WHERE id = $1',
+    [req.userId]
+  );
+
+  if (user?.role !== 'admin') {
     throw new AppError('Admin access required', 403);
   }
+
   next();
-};
+});

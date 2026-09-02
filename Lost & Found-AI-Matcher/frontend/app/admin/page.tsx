@@ -102,6 +102,17 @@ export default function AdminPage() {
     } catch { toast.error('Failed to unflag'); }
   };
 
+  const handleMarkReturned = async (m: AdminMatch) => {
+    try {
+      await Promise.all([
+        adminApi.updateItemStatus(m.lost_id, 'returned', 'lost', 'Item returned to owner'),
+        adminApi.updateItemStatus(m.found_id, 'returned', 'found', 'Item returned to owner'),
+      ]);
+      toast.success('Items marked as returned');
+      fetchData();
+    } catch { toast.error('Failed to mark returned'); }
+  };
+
   if (authLoading || loading) {
     return <div className="flex justify-center py-20"><Loader2 className="w-8 h-8 animate-spin text-primary-600" /></div>;
   }
@@ -186,7 +197,7 @@ export default function AdminPage() {
                       </td>
                       <td className="py-3 pr-4">
                         <div className="flex items-center gap-2">
-                          <span className={`badge ${m.status === 'pending' ? 'badge-warning' : m.status === 'approved' ? 'badge-success' : m.status === 'rejected' ? 'badge-danger' : 'badge-info'}`}>
+                          <span className={`badge ${m.status === 'pending' ? 'badge-warning' : m.status === 'approved' || m.status === 'returned' ? 'badge-success' : m.status === 'rejected' ? 'badge-danger' : 'badge-info'}`}>
                             {m.status}
                           </span>
                           {m.fraud_flag && (
@@ -203,6 +214,9 @@ export default function AdminPage() {
                               <button onClick={() => handleApprove(m.id)} className="text-green-600 hover:text-green-800 font-medium text-xs">Approve</button>
                               <button onClick={() => handleReject(m.id)} className="text-red-600 hover:text-red-800 font-medium text-xs">Reject</button>
                             </>
+                          )}
+                          {m.status === 'approved' && (
+                            <button onClick={() => handleMarkReturned(m)} className="text-green-600 hover:text-green-800 font-medium text-xs">Mark Returned</button>
                           )}
                           {!m.fraud_flag && (
                             <button onClick={() => handleFlag(m.id)} className="text-amber-600 hover:text-amber-800 font-medium text-xs flex items-center gap-1">

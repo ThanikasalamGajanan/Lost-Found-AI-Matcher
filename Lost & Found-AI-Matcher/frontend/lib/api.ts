@@ -70,7 +70,7 @@ export const authApi = {
     }),
 
   login: (email: string, password: string) =>
-    apiFetch<{ user: { id: string; email: string; role: string }; token: string }>('/auth/login', {
+    apiFetch<{ user: { id: string; email: string; role: 'user' | 'admin' }; token: string }>('/auth/login', {
       method: 'POST',
       body: JSON.stringify({ email, password }),
     }),
@@ -187,6 +187,9 @@ export const notificationsApi = {
 
   markAllRead: () =>
     apiFetch('/notifications/read-all', { method: 'PATCH' }),
+
+  getUnreadCount: () =>
+    apiFetch<{ unread_count: number }>('/notifications/count'),
 };
 
 // ─── Messages ─────────────────────────────────
