@@ -16,35 +16,23 @@ import { uploadRoutes } from './routes/upload.js';
 import { messageRoutes } from './routes/messages.js';
 
 const app = express();
-
-// ── Global Middleware ──────────────────────────
 app.use(helmet());
-
-// Allow the configured frontend URL plus any extra origins supplied via CORS_ORIGINS.
-const corsOrigins = [
-  config.frontendUrl,
-  ...(process.env.CORS_ORIGINS?.split(',').map((o) => o.trim()).filter(Boolean) || []),
-];
-app.use(cors({ origin: corsOrigins, credentials: true }));
-
+app.use(cors({ origin: config.frontendUrl, credentials: true }));
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
 app.use(morgan(config.nodeEnv === 'production' ? 'combined' : 'dev'));
 
-// Rate limiting
 const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000,  // 15 minutes
+  windowMs: 15 * 60 * 1000,
   max: 100,
   message: { error: 'Too many requests, please try again later.' },
 });
 app.use('/api/', limiter);
 
-// ── Health Check ──────────────────────────────
 app.get('/api/health', (_req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
-// ── API Routes ────────────────────────────────
 app.use('/api/auth', authRoutes);
 app.use('/api/reports', reportRoutes);
 app.use('/api/matches', matchRoutes);
@@ -54,10 +42,8 @@ app.use('/api/notifications', notificationRoutes);
 app.use('/api/upload', uploadRoutes);
 app.use('/api/messages', messageRoutes);
 
-// ── Error Handling ────────────────────────────
 app.use(errorHandler);
 
-// ── Start Server ──────────────────────────────
 app.listen(config.port, () => {
   console.log(`🚀 Lost & Found API running on http://localhost:${config.port}`);
   console.log(`   Environment: ${config.nodeEnv}`);
