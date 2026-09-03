@@ -4,16 +4,15 @@
   "private": true,
   "description": "Lost and Found AI Matching App - Intelligent item matching with verification workflows",
   "scripts": {
-    "dev": "Start-Process powershell -ArgumentList '-NoExit', '-Command', 'cd backend; npm run dev'; cd frontend; npm run dev",
-    "install:all": "cd backend; npm install; cd ../frontend; npm install",
-    "dev:frontend": "cd frontend; npm run dev",
-    "dev:backend": "cd backend; npm run dev",
-    "build:frontend": "cd frontend; npm run build",
-    "build:backend": "cd backend; npm run build",
-    "lint:frontend": "cd frontend; npm run lint",
-    "lint:backend": "cd backend; npm run lint",
-    "test": "cd backend; npm run test",
-    "db:migrate": "cd backend; npm run migrate",
-    "db:seed": "cd backend; npm run seed"
+    "install:all": "cd backend && npm install && cd ../frontend && npm install",
+    "dev:frontend": "cd frontend && npm run dev",
+    "dev:backend": "cd backend && npm run dev",
+    "build:frontend": "cd frontend && npm run build",
+    "build:backend": "cd backend && npm run build",
+    "lint:frontend": "cd frontend && npm run lint",
+    "lint:backend": "cd backend && npm run lint",
+    "test": "cd backend && npm run test",
+    "db:migrate": "cd backend && npm run migrate",
+    "db:seed": "cd backend && npm run seed"
   }
 }

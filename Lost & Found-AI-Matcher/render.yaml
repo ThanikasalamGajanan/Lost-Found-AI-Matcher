@@ -7,7 +7,7 @@ services:
     env: node
     plan: free
     region: ohio
-    rootDir: "rootDir: LostFound-AI-Matcher/backend"
+    rootDir: "backend"
     buildCommand: npm install && npm run build
     startCommand: node dist/server.js
     healthCheckPath: /api/health
@@ -18,11 +18,9 @@ services:
         value: "4000"
       # Replace with your deployed Vercel frontend URL after deploying the frontend.
       - key: FRONTEND_URL
-        value: "[REPLACE_AFTER_DEPLOYMENT: frontend URL]"
-      # Optional comma-separated list of extra origins to allow through CORS.
-      # Useful if you have a preview/staging Vercel domain in addition to production.
+        value: "https://your-vercel-app.vercel.app"
       - key: CORS_ORIGINS
-        value: "[REPLACE_AFTER_DEPLOYMENT: frontend URL]"
+        value: "https://your-vercel-app.vercel.app"
       # Supabase project URL (public, but replace with your real value).
       - key: NEXT_PUBLIC_SUPABASE_URL
         sync: false

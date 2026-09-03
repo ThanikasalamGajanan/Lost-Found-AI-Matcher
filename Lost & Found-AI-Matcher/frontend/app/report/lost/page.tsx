@@ -78,7 +78,7 @@ export default function ReportLostPage() {
 
           {similarItems.length === 0 && (
             <p className="text-center text-gray-500 mt-8">
-              No similar found items yet — we'll notify you as soon as a match appears.
+              No similar found items yet — we&apos;ll notify you as soon as a match appears.
             </p>
           )}
 

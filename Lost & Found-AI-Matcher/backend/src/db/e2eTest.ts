@@ -22,6 +22,20 @@ function formatVector(embedding: number[]): string {
   return `[${embedding.join(',')}]`;
 }
 
+async function mirrorAuthUserLocally(userId: string, email: string, fullName: string): Promise<void> {
+  // When running against local Postgres, Supabase Auth lives in the cloud so the
+  // auth.users row referenced by public.users(id) does not exist locally. Mirror
+  // the cloud user into the local auth schema so the FK trigger can fire.
+  await pool.query(
+    `INSERT INTO auth.users (id, email, raw_user_meta_data)
+     VALUES ($1, $2, $3)
+     ON CONFLICT (id) DO UPDATE
+       SET email = EXCLUDED.email,
+           raw_user_meta_data = EXCLUDED.raw_user_meta_data`,
+    [userId, email, JSON.stringify({ full_name: fullName })]
+  );
+}
+
 async function ensureTestUser(email: string): Promise<string> {
   const { data: listData, error: listError } = await supabaseAdmin.auth.admin.listUsers();
   if (listError) {
@@ -31,15 +45,17 @@ async function ensureTestUser(email: string): Promise<string> {
   const existingUser = listData.users.find((u) => u.email === email);
 
   let userId: string;
+  let fullName = 'E2E Test User';
   if (existingUser) {
     userId = existingUser.id;
+    fullName = (existingUser.user_metadata as { full_name?: string } | undefined)?.full_name ?? fullName;
     console.log(`Using existing auth user: ${email} (${userId})`);
   } else {
     const { data: createData, error: createError } = await supabaseAdmin.auth.admin.createUser({
       email,
       password: TEST_PASSWORD,
       email_confirm: true,
-      user_metadata: { full_name: 'E2E Test User' },
+      user_metadata: { full_name: fullName },
     });
 
     if (createError || !createData.user) {
@@ -49,6 +65,8 @@ async function ensureTestUser(email: string): Promise<string> {
     userId = createData.user.id;
     console.log(`Created auth user: ${email} (${userId})`);
   }
+
+  await mirrorAuthUserLocally(userId, email, fullName);
 
   await pool.query(
     `INSERT INTO users (id, email, full_name, role)
@@ -73,14 +91,16 @@ async function createSecondUser(): Promise<string> {
   const existingUser = listData.users.find((u) => u.email === email);
 
   let userId: string;
+  let fullName = 'E2E Finder User';
   if (existingUser) {
     userId = existingUser.id;
+    fullName = (existingUser.user_metadata as { full_name?: string } | undefined)?.full_name ?? fullName;
   } else {
     const { data: createData, error: createError } = await supabaseAdmin.auth.admin.createUser({
       email,
       password: TEST_PASSWORD,
       email_confirm: true,
-      user_metadata: { full_name: 'E2E Finder User' },
+      user_metadata: { full_name: fullName },
     });
 
     if (createError || !createData.user) {
@@ -89,6 +109,8 @@ async function createSecondUser(): Promise<string> {
 
     userId = createData.user.id;
   }
+
+  await mirrorAuthUserLocally(userId, email, fullName);
 
   await pool.query(
     `INSERT INTO users (id, email, full_name, role)
