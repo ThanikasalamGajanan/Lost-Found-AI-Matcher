@@ -17,7 +17,9 @@ import { messageRoutes } from './routes/messages.js';
 
 const app = express();
 app.use(helmet());
-app.use(cors({ origin: config.frontendUrl, credentials: true }));
+const allowedOrigins = process.env.CORS_ORIGINS? process.env.CORS_ORIGINS.split(',').map((o) => o.trim()): [config.frontendUrl];
+
+app.use(cors({ origin: allowedOrigins, credentials: true }));
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
 app.use(morgan(config.nodeEnv === 'production' ? 'combined' : 'dev'));
