@@ -7,7 +7,7 @@ services:
     env: node
     plan: free
     region: ohio
-    rootDir: "Lost & Found-AI-Matcher/backend"
+    rootDir: "rootDir: LostFound-AI-Matcher/backend"
     buildCommand: npm install && npm run build
     startCommand: node dist/server.js
     healthCheckPath: /api/health
