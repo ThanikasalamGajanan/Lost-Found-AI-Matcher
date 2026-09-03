@@ -8,7 +8,6 @@ import { Bell, LogOut, User, Menu, X, LayoutDashboard, Search, PlusCircle } from
 import { useEffect, useState } from 'react';
 
 const navLinks = [
-
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { href: '/report/lost', label: 'Report Lost', icon: PlusCircle },
   { href: '/report/found', label: 'Report Found', icon: Search },
@@ -19,6 +18,7 @@ export function Navbar() {
   const { user, logout } = useAuthStore();
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [userMenuOpen, setUserMenuOpen] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
 
   useEffect(() => {
@@ -34,7 +34,6 @@ export function Navbar() {
       } catch { /* silent */ }
     };
 
-    // Clear badge when the user opens the notifications page.
     if (pathname === '/notifications') {
       notificationsApi.markAllRead().catch(() => {});
       setUnreadCount(0);
@@ -42,10 +41,9 @@ export function Navbar() {
       fetchCount();
     }
 
-        const interval = setInterval(fetchCount, 30000);
+    const interval = setInterval(fetchCount, 30000);
     return () => clearInterval(interval);
   }, [user, pathname]);
-  const [userMenuOpen, setUserMenuOpen] = useState(false);
 
   const handleLogout = () => {
     logout();
@@ -98,61 +96,61 @@ export function Navbar() {
                   <User className="w-4 h-4" />
                   {user.full_name || user.email}
                 </div>
-              <div className="relative ml-3">
-                <button
-                  onClick={() => setUserMenuOpen(!userMenuOpen)}
-                  className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-gray-700 hover:bg-gray-50 transition-colors"
-                >
-                  <div className="w-8 h-8 rounded-full bg-primary-100 text-primary-700 flex items-center justify-center">
-                    <User className="w-4 h-4" />
-                  </div>
-                  <span className="max-w-[120px] truncate hidden lg:block">
-                    {user.full_name || user.email}
-                  </span>
-                </button>
-
-                {userMenuOpen && (
-                  <div className="absolute right-0 mt-2 w-56 bg-white rounded-xl shadow-lg border border-gray-100 py-2">
-                    <div className="px-4 py-2 border-b border-gray-100 mb-1">
-                      <p className="text-sm font-medium text-gray-900 truncate">
-                        {user.full_name || 'User'}
-                      </p>
-                      <p className="text-xs text-gray-500 truncate">{user.email}</p>
+                <div className="relative ml-3">
+                  <button
+                    onClick={() => setUserMenuOpen(!userMenuOpen)}
+                    className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                  >
+                    <div className="w-8 h-8 rounded-full bg-primary-100 text-primary-700 flex items-center justify-center">
+                      <User className="w-4 h-4" />
                     </div>
-                    <Link
-                      href="/dashboard"
-                      onClick={() => setUserMenuOpen(false)}
-                      className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
-                    >
-                      <LayoutDashboard className="w-4 h-4" /> Dashboard
-                    </Link>
-                    <Link
-                      href="/notifications"
-                      onClick={() => setUserMenuOpen(false)}
-                      className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
-                    >
-                      <Bell className="w-4 h-4" /> Notifications
-                      {unreadCount > 0 && (
-                        <span className="ml-auto badge bg-red-100 text-red-700 text-xs">
-                          {unreadCount}
-                        </span>
-                      )}
-                    </Link>
-                    <button
-                      onClick={handleLogout}
-                      className="w-full flex items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-red-50"
-                    >
-                      <LogOut className="w-4 h-4" /> Log Out
-                    </button>
-                  </div>
-                                )}
+                    <span className="max-w-[120px] truncate hidden lg:block">
+                      {user.full_name || user.email}
+                    </span>
+                  </button>
+
+                  {userMenuOpen && (
+                    <div className="absolute right-0 mt-2 w-56 bg-white rounded-xl shadow-lg border border-gray-100 py-2">
+                      <div className="px-4 py-2 border-b border-gray-100 mb-1">
+                        <p className="text-sm font-medium text-gray-900 truncate">
+                          {user.full_name || 'User'}
+                        </p>
+                        <p className="text-xs text-gray-500 truncate">{user.email}</p>
+                      </div>
+                      <Link
+                        href="/dashboard"
+                        onClick={() => setUserMenuOpen(false)}
+                        className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                      >
+                        <LayoutDashboard className="w-4 h-4" /> Dashboard
+                      </Link>
+                      <Link
+                        href="/notifications"
+                        onClick={() => setUserMenuOpen(false)}
+                        className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                      >
+                        <Bell className="w-4 h-4" /> Notifications
+                        {unreadCount > 0 && (
+                          <span className="ml-auto badge bg-red-100 text-red-700 text-xs">
+                            {unreadCount}
+                          </span>
+                        )}
+                      </Link>
+                      <button
+                        onClick={handleLogout}
+                        className="w-full flex items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-red-50"
+                      >
+                        <LogOut className="w-4 h-4" /> Log Out
+                      </button>
+                    </div>
+                  )}
+                </div>
               </div>
-            </div>
-          ) : (
-            <Link href="/login" className="btn-primary text-sm px-4 py-2 ml-3">
-              Log In
-            </Link>
-          )}
+            ) : (
+              <Link href="/login" className="btn-primary text-sm px-4 py-2 ml-3">
+                Log In
+              </Link>
+            )}
           </div>
 
           {/* Mobile hamburger */}

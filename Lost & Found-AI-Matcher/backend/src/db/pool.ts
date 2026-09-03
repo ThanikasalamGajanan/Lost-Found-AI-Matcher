@@ -1,27 +1,36 @@
 import pg from 'pg';
+import { URL } from 'url';
 import { config } from '../config/index.js';
 
 const { Pool } = pg;
 
-// Detect local/private PostgreSQL hosts so we don't force SSL on them.
 const localHostPattern = /(?:localhost|127\.\d+\.\d+\.\d+|(?:10|172\.(?:1[6-9]|2\d|3[01])|192\.168)\.\d+\.\d+)/i;
-const useSsl = !localHostPattern.test(config.databaseUrl);
 
-export const pool = new Pool({
-  connectionString: config.databaseUrl,
-  ssl: useSsl ? { rejectUnauthorized: false } : false,
-  max: 20,
-  idleTimeoutMillis: 30000,
-  connectionTimeoutMillis: 5000,
-});
+function parseConnectionUrl(url: string): pg.PoolConfig {
+  const parsed = new URL(url);
+  const useSsl = !localHostPattern.test(url);
+
+  return {
+    host: parsed.hostname,
+    port: parsed.port ? parseInt(parsed.port, 10) : 5432,
+    user: decodeURIComponent(parsed.username),
+    password: decodeURIComponent(parsed.password),
+    database: parsed.pathname.replace(/^\//, '') || 'postgres',
+    ssl: useSsl
+      ? { rejectUnauthorized: false, servername: parsed.hostname }
+      : false,
+    max: 20,
+    idleTimeoutMillis: 30000,
+    connectionTimeoutMillis: 10000,
+  };
+}
+
+export const pool = new Pool(parseConnectionUrl(config.databaseUrl));
 
 pool.on('error', (err) => {
   console.error('Unexpected database pool error:', err);
 });
 
-/**
- * Execute a parameterised query and return rows.
- */
 export async function query<T = Record<string, unknown>>(
   text: string,
   params?: unknown[]
@@ -30,10 +39,6 @@ export async function query<T = Record<string, unknown>>(
   return result.rows as T[];
 }
 
-/**
- * Execute a query that should return exactly one row.
- * Returns null if no row found.
- */
 export async function queryOne<T = Record<string, unknown>>(
   text: string,
   params?: unknown[]
