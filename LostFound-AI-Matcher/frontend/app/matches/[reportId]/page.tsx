@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useParams, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { matchesApi } from '@/lib/api';
@@ -18,7 +18,7 @@ export default function MatchesPage() {
   const [matches, setMatches] = useState<Match[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const fetchMatches = async () => {
+  const fetchMatches = useCallback(async () => {
     setLoading(true);
     try {
       const data = await matchesApi.getByReport(reportId, type) as Match[];
@@ -31,11 +31,11 @@ export default function MatchesPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [reportId, type]);
 
   useEffect(() => {
     if (reportId) fetchMatches();
-  }, [reportId, type]);
+  }, [reportId, type, fetchMatches]);
 
   const sortedMatches = useMemo(
     () => [...matches].sort((a, b) => b.total_score - a.total_score),

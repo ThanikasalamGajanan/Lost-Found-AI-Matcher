@@ -33,7 +33,7 @@ export const upload = multer({
  */
 export async function processAndUpload(
   buffer: Buffer,
-  originalMime: string
+  _originalMime: string
 ): Promise<string> {
   // Normalise to webp, cap at 1280px wide (preserves aspect ratio)
   const processed = await sharp(buffer)

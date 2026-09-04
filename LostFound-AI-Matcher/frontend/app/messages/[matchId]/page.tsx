@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useParams } from 'next/navigation';
 import { messagesApi } from '@/lib/api';
 import type { Message } from '@/types';
@@ -17,7 +17,7 @@ export default function MessageThreadPage() {
   const [sending, setSending] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
 
-  const fetchMessages = async () => {
+  const fetchMessages = useCallback(async () => {
     if (!matchId) return;
     try {
       const data = await messagesApi.getThread(matchId);
@@ -28,13 +28,13 @@ export default function MessageThreadPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [matchId]);
 
   useEffect(() => {
     fetchMessages();
     const interval = setInterval(fetchMessages, 5000);
     return () => clearInterval(interval);
-  }, [matchId]);
+  }, [matchId, fetchMessages]);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });

@@ -1,7 +1,8 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 import Link from 'next/link';
 import { reportsApi, type ReportResponse } from '@/lib/api';
 import { useAuthStore } from '@/lib/store';
@@ -40,15 +41,7 @@ export default function DashboardPage() {
   const [foundItems, setFoundItems] = useState<DashboardItem[]>([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    if (!authLoading && !user) {
-      router.push('/login');
-      return;
-    }
-    if (user) fetchReports();
-  }, [user, authLoading]);
-
-  const fetchReports = async () => {
+  const fetchReports = useCallback(async () => {
     if (!user) return;
     setLoading(true);
     try {
@@ -61,7 +54,15 @@ export default function DashboardPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [user]);
+
+  useEffect(() => {
+    if (!authLoading && !user) {
+      router.push('/login');
+      return;
+    }
+    if (user) fetchReports();
+  }, [user, authLoading, router, fetchReports]);
 
   if (authLoading) {
     return (
@@ -172,11 +173,15 @@ function ReportCard({ item }: { item: DashboardItem }) {
       </div>
 
       {item.photo_url ? (
-        <img
-          src={item.photo_url}
-          alt={item.category}
-          className="w-full h-40 object-cover rounded-lg mb-3"
-        />
+        <div className="relative w-full h-40 mb-3">
+          <Image
+            src={item.photo_url}
+            alt={item.category}
+            fill
+            className="object-cover rounded-lg"
+            sizes="(max-width: 768px) 100vw, 33vw"
+          />
+        </div>
       ) : (
         <div className="w-full h-40 bg-gray-100 rounded-lg mb-3 flex items-center justify-center">
           <PackageOpen className="w-10 h-10 text-gray-300" />

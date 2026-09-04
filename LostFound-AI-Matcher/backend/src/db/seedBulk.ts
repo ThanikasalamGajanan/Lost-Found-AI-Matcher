@@ -22,11 +22,6 @@ interface SeedItem {
   private_details?: Record<string, string>;
 }
 
-interface InsertedItem {
-  id: string;
-  type: 'lost' | 'found';
-}
-
 async function ensureTestUser(): Promise<string> {
   const testEmail = 'admin@test.com';
   const testPassword = 'TestPassword123!';

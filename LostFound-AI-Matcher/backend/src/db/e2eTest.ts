@@ -7,12 +7,6 @@ import { generateEmbedding } from '../services/llmService.js';
 const TEST_EMAIL = 'admin@test.com';
 const TEST_PASSWORD = 'TestPassword123!';
 
-interface UserIds {
-  userId: string;
-  lostUserId: string;
-  foundUserId: string;
-}
-
 function logStep(step: number, message: string): void {
   console.log(`\n[${step}] ${message}`);
   console.log('-'.repeat(60));
@@ -189,18 +183,28 @@ async function generateOrCreateQuestion(
   privateDetails: Record<string, string>
 ): Promise<{ id: string; question_text: string; correct_answer: string; field_source: string }> {
   try {
-    const question = await generateVerificationQuestion(matchId, privateDetails);
-    const fields = Object.entries(privateDetails);
-    const [fieldKey, correctAnswer] = fields[0];
-    return { ...question, correct_answer: correctAnswer, field_source: fieldKey };
+    // generateVerificationQuestion randomly picks a field and stores the matching
+    // correct_answer/field_source in the DB. Fetch the full row so the test data
+    // stays consistent (don't force it to the first field).
+    const { id } = await generateVerificationQuestion(matchId, privateDetails);
+    const question = await queryOne<{ id: string; question_text: string; correct_answer: string; field_source: string }>(
+      `SELECT id, question_text, correct_answer, field_source
+       FROM verification_questions
+       WHERE id = $1`,
+      [id]
+    );
+    if (!question) {
+      throw new Error('Failed to retrieve generated verification question');
+    }
+    return question;
   } catch (err) {
     console.warn(`OpenAI question generation failed: ${(err as Error).message}. Falling back to direct DB insert.`);
     const fields = Object.entries(privateDetails);
     const [fieldKey, correctAnswer] = fields[0];
-    const result = await queryOne<{ id: string; question_text: string }>(
+    const result = await queryOne<{ id: string; question_text: string; correct_answer: string; field_source: string }>(
       `INSERT INTO verification_questions (match_id, question_text, correct_answer, field_source)
        VALUES ($1, $2, $3, $4)
-       RETURNING id, question_text`,
+       RETURNING id, question_text, correct_answer, field_source`,
       [matchId, `What was the ${fieldKey.replace(/_/g, ' ')} of the item?`, correctAnswer, fieldKey]
     );
 
@@ -208,7 +212,7 @@ async function generateOrCreateQuestion(
       throw new Error('Failed to create verification question fallback');
     }
 
-    return { ...result, correct_answer: correctAnswer, field_source: fieldKey };
+    return result;
   }
 }
 

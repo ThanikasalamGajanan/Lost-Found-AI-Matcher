@@ -5,6 +5,7 @@ import Link from 'next/link';
 import type { Match } from '@/types';
 import { verifyApi } from '@/lib/api';
 import { CheckCircle, XCircle, MessageCircle, Send, AlertTriangle, PackageCheck, X } from 'lucide-react';
+import Image from 'next/image';
 import toast from 'react-hot-toast';
 
 interface MatchCardProps {
@@ -143,11 +144,15 @@ export function MatchCard({ match, userRole, onClaim, onVerified }: MatchCardPro
       {/* Header: thumbnail + chips + score */}
       <div className="flex items-start gap-4 mb-5">
         {otherItem.photo ? (
-          <img
-            src={otherItem.photo}
-            alt={otherItem.category || 'Item'}
-            className="w-20 h-20 sm:w-24 sm:h-24 rounded-xl object-cover border flex-shrink-0"
-          />
+          <div className="relative w-20 h-20 sm:w-24 sm:h-24 rounded-xl border flex-shrink-0 overflow-hidden">
+            <Image
+              src={otherItem.photo}
+              alt={otherItem.category || 'Item'}
+              fill
+              className="object-cover"
+              sizes="96px"
+            />
+          </div>
         ) : (
           <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-xl bg-gray-100 flex items-center justify-center flex-shrink-0">
             <span className="text-2xl">📦</span>

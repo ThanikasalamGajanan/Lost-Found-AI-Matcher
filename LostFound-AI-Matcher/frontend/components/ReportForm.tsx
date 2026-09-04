@@ -18,6 +18,7 @@ import {
   PackageOpen,
   Lock,
 } from 'lucide-react';
+import Image from 'next/image';
 import toast from 'react-hot-toast';
 
 type Lang = 'en' | 'ta' | 'si';
@@ -270,7 +271,9 @@ export function ReportForm({ type, onSubmit }: ReportFormProps) {
     }
 
     setPhotoFile(file);
-    setPhotoPreview(URL.createObjectURL(file));
+    const reader = new FileReader();
+    reader.onloadend = () => setPhotoPreview(reader.result as string);
+    reader.readAsDataURL(file);
   };
 
   const clearPhoto = () => {
@@ -419,10 +422,12 @@ export function ReportForm({ type, onSubmit }: ReportFormProps) {
         <div className="flex items-center gap-4">
           {photoPreview ? (
             <div className="relative w-28 h-28 sm:w-32 sm:h-32 rounded-xl overflow-hidden border border-gray-200 shadow-sm">
-              <img
+              <Image
                 src={photoPreview}
                 alt="Preview"
-                className="w-full h-full object-cover"
+                fill
+                className="object-cover"
+                sizes="128px"
               />
               <button
                 type="button"

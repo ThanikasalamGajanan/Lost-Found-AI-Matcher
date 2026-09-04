@@ -1,5 +1,7 @@
 'use client';
 
+import Image from 'next/image';
+
 interface SimilarItem {
   id: string;
   category: string;
@@ -34,10 +36,12 @@ export function SimilarItems({ items, label }: SimilarItemsProps) {
           >
             {/* Photo */}
             {item.photo_url ? (
-              <img
+              <Image
                 src={item.photo_url}
                 alt={item.category}
-                className="w-16 h-16 rounded object-cover flex-shrink-0"
+                width={64}
+                height={64}
+                className="rounded object-cover flex-shrink-0"
               />
             ) : (
               <div className="w-16 h-16 rounded bg-gray-100 flex items-center justify-center flex-shrink-0 text-xs text-gray-400">

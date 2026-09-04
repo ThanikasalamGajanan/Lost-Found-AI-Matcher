@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { adminApi, DisputedMatch } from '@/lib/api';
 import { useAuthStore } from '@/lib/store';
@@ -38,15 +38,7 @@ export default function AdminPage() {
   const [statusFilter, setStatusFilter] = useState('pending');
   const [tab, setTab] = useState<'matches' | 'fraud'>('matches');
 
-  useEffect(() => {
-    if (!authLoading && (!user || user.role !== 'admin')) {
-      router.push('/');
-      return;
-    }
-    if (user?.role === 'admin') fetchData();
-  }, [user, authLoading, statusFilter, tab]);
-
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     setLoading(true);
     try {
       const [statsData, matchesData] = await Promise.all([
@@ -66,7 +58,15 @@ export default function AdminPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [statusFilter, tab]);
+
+  useEffect(() => {
+    if (!authLoading && (!user || user.role !== 'admin')) {
+      router.push('/');
+      return;
+    }
+    if (user?.role === 'admin') fetchData();
+  }, [user, authLoading, statusFilter, tab, router, fetchData]);
 
   const handleApprove = async (id: string) => {
     try {
