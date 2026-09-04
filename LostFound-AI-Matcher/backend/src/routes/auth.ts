@@ -27,6 +27,15 @@ authRoutes.post('/signup', asyncHandler(async (req, res) => {
     throw new AppError(error?.message || 'Signup failed', 400);
   }
 
+  // Create local user row (needed when using local PostgreSQL instead of Supabase DB)
+  await queryOne(
+    `INSERT INTO users (id, email, full_name)
+     VALUES ($1, $2, $3)
+     ON CONFLICT (id) DO UPDATE SET email = EXCLUDED.email, full_name = EXCLUDED.full_name
+     RETURNING id`,
+    [data.user.id, email, full_name || email.split('@')[0]]
+  );
+
   // Issue our own JWT for backend API auth
   const token = jwt.sign(
     { sub: data.user.id, role: 'user', email },
@@ -38,8 +47,7 @@ authRoutes.post('/signup', asyncHandler(async (req, res) => {
     user: { id: data.user.id, email, full_name },
     token,
   });
-}));
-/**
+}));/**
  * POST /api/auth/login
  * Authenticate with email + password.
  */
