@@ -16,7 +16,19 @@ const RETRY_DELAYS_MS = [10000, 15000, 20000, 30000];
 async function fetchWithRetry(url: string, init: RequestInit): Promise<Response> {
   for (let attempt = 0; ; attempt++) {
     try {
-      return await fetch(url, init);
+      const response = await fetch(url, init);
+      // Render's proxy answers 502/503 with an HTML page while the free-tier
+      // instance boots or redeploys. Treat those like a network failure so the
+      // request keeps retrying instead of surfacing "API error: 502".
+      if (
+        shouldRetry &&
+        (response.status === 502 || response.status === 503 || response.status === 504) &&
+        attempt < RETRY_DELAYS_MS.length
+      ) {
+        await sleep(RETRY_DELAYS_MS[attempt]);
+        continue;
+      }
+      return response;
     } catch (err) {
       if (!shouldRetry) {
         throw err;
