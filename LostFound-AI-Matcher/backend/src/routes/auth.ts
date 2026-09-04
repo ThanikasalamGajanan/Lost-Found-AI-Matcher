@@ -63,13 +63,29 @@ authRoutes.post('/login', asyncHandler(async (req, res) => {
     throw new AppError('Invalid email or password', 401);
   }
 
-  // Fetch role from our users table
-  const userRow = await queryOne<{ role: string }>(
-    'SELECT role FROM users WHERE id = $1',
-    [data.user.id]
-  );
-
-  const role = userRow?.role || 'user';
+  // Fetch role from our users table. Fall back to the Supabase REST API when the
+  // PostgreSQL pool is unreachable (e.g. bad DATABASE_URL on Render) — the users
+  // row is auto-created by the auth.users trigger in the cloud DB, so Supabase
+  // Auth already succeeded and login should not fail because of the pool.
+  let role = 'user';
+  try {
+    const userRow = await queryOne<{ role: string }>(
+      'SELECT role FROM users WHERE id = $1',
+      [data.user.id]
+    );
+    role = userRow?.role || 'user';
+  } catch (dbErr) {
+    console.warn(
+      'users role lookup failed, falling back to Supabase REST:',
+      (dbErr as Error).message
+    );
+    const { data: row } = await supabaseAdmin
+      .from('users')
+      .select('role')
+      .eq('id', data.user.id)
+      .single();
+    role = row?.role || 'user';
+  }
 
   const token = jwt.sign(
     { sub: data.user.id, role, email },
@@ -94,12 +110,33 @@ authRoutes.get('/me', asyncHandler(async (req: AuthRequest, res) => {
   }
 
   const token = authHeader.split(' ')[1];
-  const decoded = jwt.verify(token, config.jwt.secret) as { sub: string };
+  let decoded: { sub: string };
+  try {
+    decoded = jwt.verify(token, config.jwt.secret) as { sub: string };
+  } catch {
+    throw new AppError('Invalid or expired token', 401);
+  }
 
-  const user = await queryOne(
-    'SELECT id, email, full_name, phone, avatar_url, role, preferred_lang, created_at FROM users WHERE id = $1',
-    [decoded.sub]
-  );
+  // Load the profile from PostgreSQL, falling back to the Supabase REST API
+  // when the pool is unreachable so the dashboard still renders.
+  let user: Record<string, unknown> | null = null;
+  try {
+    user = await queryOne(
+      'SELECT id, email, full_name, phone, avatar_url, role, preferred_lang, created_at FROM users WHERE id = $1',
+      [decoded.sub]
+    );
+  } catch (dbErr) {
+    console.warn(
+      'users profile lookup failed, falling back to Supabase REST:',
+      (dbErr as Error).message
+    );
+    const { data: row } = await supabaseAdmin
+      .from('users')
+      .select('id, email, full_name, phone, avatar_url, role, preferred_lang, created_at')
+      .eq('id', decoded.sub)
+      .single();
+    user = row ?? null;
+  }
 
   if (!user) {
     throw new AppError('User not found', 404);
