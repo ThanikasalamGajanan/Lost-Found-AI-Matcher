@@ -4,6 +4,31 @@ interface FetchOptions extends RequestInit {
   token?: string;
 }
 
+const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
+// The API runs on Render's free tier and sleeps when idle. The first request to a
+// sleeping instance fails with "Failed to fetch" while it boots, so retry with
+// backoff delays. Only the deployed backend is retried — local development fails
+// fast instead of waiting when the backend is simply not running.
+const shouldRetry = API_URL.includes('onrender.com');
+const RETRY_DELAYS_MS = [10000, 15000, 20000, 30000];
+
+async function fetchWithRetry(url: string, init: RequestInit): Promise<Response> {
+  for (let attempt = 0; ; attempt++) {
+    try {
+      return await fetch(url, init);
+    } catch (err) {
+      if (!shouldRetry) {
+        throw err;
+      }
+      if (attempt >= RETRY_DELAYS_MS.length) {
+        throw new Error('The server is still waking up. Please wait a minute and try again.');
+      }
+      await sleep(RETRY_DELAYS_MS[attempt]);
+    }
+  }
+}
+
 function resolveAuthHeaders(token?: string): Record<string, string> {
   const headers: Record<string, string> = {};
   if (token) {
@@ -24,7 +49,7 @@ async function apiFetch<T>(endpoint: string, options: FetchOptions = {}): Promis
     ...(customHeaders as Record<string, string>),
   };
 
-  const response = await fetch(`${API_URL}${endpoint}`, { headers, ...rest });
+  const response = await fetchWithRetry(`${API_URL}${endpoint}`, { headers, ...rest });
 
   if (!response.ok) {
     const body = await response.json().catch(() => ({}));
@@ -37,7 +62,7 @@ async function apiFetch<T>(endpoint: string, options: FetchOptions = {}): Promis
 async function apiUpload<T>(endpoint: string, formData: FormData): Promise<T> {
   const headers = resolveAuthHeaders();
 
-  const response = await fetch(`${API_URL}${endpoint}`, {
+  const response = await fetchWithRetry(`${API_URL}${endpoint}`, {
     method: 'POST',
     headers,
     body: formData,
