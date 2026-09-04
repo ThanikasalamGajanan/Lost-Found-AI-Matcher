@@ -23,6 +23,10 @@ services:
         sync: false
       - key: SUPABASE_SERVICE_ROLE_KEY
         sync: false
+      # Use the Supabase connection POOLER URI (Session mode, port 5432,
+      # username postgres.<project-ref>@aws-0-<region>.pooler.supabase.com).
+      # Do NOT use db.<project-ref>.supabase.co — it is IPv6-only and unreachable
+      # from Render's IPv4 egress, which breaks every SQL query with a 500.
       - key: DATABASE_URL
         sync: false
       - key: OPENAI_API_KEY
