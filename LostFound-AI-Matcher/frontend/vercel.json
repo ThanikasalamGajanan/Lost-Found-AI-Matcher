@@ -5,7 +5,7 @@
   "installCommand": "npm install",
   "env": {
     "NEXT_PUBLIC_SUPABASE_URL": "https://ncepomnxwpbrkkgimjog.supabase.co",
-    "NEXT_PUBLIC_SUPABASE_ANON_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5jZXBvbW54d3BicmtrZ2ltam9nIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc3Mzk3MDMsImV4cCI6MjEwMzMxNTcwM30.FAkh392RWn_DBrpkNjElEf9bWoNKdAl5ZEAAlMfiU9c",
-    "NEXT_PUBLIC_API_URL": "https://lost-found-api-z7wt.onrender.com"
+    "NEXT_PUBLIC_SUPABASE_ANON_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5jZXBvbW54d3BicmtrZ2ltam9nIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc3NzM5NzAzLCJleHAiOjIxMDMzMTU3MDN9.FAkh392RWn_DBrpkNjElEf9bWoNKdAl5ZEAAlMfiU9c",
+    "NEXT_PUBLIC_API_URL": "https://lost-found-api-z7wt.onrender.com/api"
   }
 }
