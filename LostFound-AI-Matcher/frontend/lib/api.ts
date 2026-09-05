@@ -2,6 +2,7 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api';
 
 interface FetchOptions extends RequestInit {
   token?: string;
+  skipAuth?: boolean;
 }
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
@@ -53,15 +54,16 @@ function resolveAuthHeaders(token?: string): Record<string, string> {
 }
 
 async function apiFetch<T>(endpoint: string, options: FetchOptions = {}): Promise<T> {
-  const { token, headers: customHeaders, ...rest } = options;
+  const { token, skipAuth, headers: customHeaders, ...rest } = options;
 
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
-    ...resolveAuthHeaders(token),
+    ...(skipAuth ? {} : resolveAuthHeaders(token)),
     ...(customHeaders as Record<string, string>),
   };
 
   const response = await fetchWithRetry(`${API_URL}${endpoint}`, { headers, ...rest });
+  
 
   if (!response.ok) {
     const body = await response.json().catch(() => ({}));
@@ -105,12 +107,14 @@ export const authApi = {
     apiFetch<AuthResponse>('/auth/signup', {
       method: 'POST',
       body: JSON.stringify({ email, password, full_name }),
+      skipAuth: true,
     }),
 
   login: (email: string, password: string) =>
     apiFetch<AuthResponse>('/auth/login', {
       method: 'POST',
       body: JSON.stringify({ email, password }),
+      skipAuth: true,
     }),
 };
 

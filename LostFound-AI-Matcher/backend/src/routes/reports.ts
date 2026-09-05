@@ -117,6 +117,7 @@ reportRoutes.post(
   validateBody(lostReportSchema),
   asyncHandler(async (req: AuthRequest, res) => {
     const userId = req.userId!;
+    console.log(`[REPORT] Creating lost report for user ${userId} (${req.userEmail})`);
     await ensureLocalUser(userId, req.userEmail!);
     const {
       category, brand, colour, description,
@@ -196,6 +197,7 @@ reportRoutes.post(
   validateBody(foundReportSchema),
   asyncHandler(async (req: AuthRequest, res) => {
     const userId = req.userId!;
+    console.log(`[REPORT] Creating found report for user ${userId} (${req.userEmail})`);
     await ensureLocalUser(userId, req.userEmail!);
     const {
       category, brand, colour, description,

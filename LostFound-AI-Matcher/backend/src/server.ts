@@ -26,12 +26,16 @@ app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
 app.use(morgan(config.nodeEnv === 'production' ? 'combined' : 'dev'));
 
-const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: 100,
-  message: { error: 'Too many requests, please try again later.' },
-});
-app.use('/api/', limiter);
+// Rate limiting is only enforced in production to avoid blocking local
+// development workflows (hot reload, StrictMode double-mounts, repeated tests).
+if (config.nodeEnv === 'production') {
+  const limiter = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: 100,
+    message: { error: 'Too many requests, please try again later.' },
+  });
+  app.use('/api/', limiter);
+}
 
 app.get('/api/health', (_req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });

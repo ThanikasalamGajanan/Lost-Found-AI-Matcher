@@ -24,7 +24,8 @@ export default function LoginPage() {
   const [touched, setTouched] = useState<Record<string, boolean>>({});
   const [loading, setLoading] = useState(false);
 
-  const { login } = useAuthStore();
+  const { login, logout } = useAuthStore();
+
   const router = useRouter();
 
   const validateField = (name: string, value: string): string | undefined => {
@@ -67,6 +68,7 @@ export default function LoginPage() {
     if (!validateAll()) return;
 
     setLoading(true);
+    logout();
     try {
       if (mode === 'signup') {
         const { user, token } = await authApi.signup(email, password, fullName);

@@ -70,13 +70,33 @@ export default function NotificationsPage() {
     }
   };
 
-  const handleMarkRead = async (id: string) => {
+  const getNotificationHref = (n: ApiNotification): string | undefined => {
+    // Approved matches and message-related notifications go to the chat thread
+    if ((n.type === 'match_approved' || n.type === 'admin_message') && n.match_id) {
+      return `/messages/${n.match_id}`;
+    }
+    // Match-related notifications go to the report's match page
+    if (n.item_id && n.item_type) {
+      return `/matches/${n.item_id}?type=${n.item_type}`;
+    }
+    // Fallback for match-approved without item_id
+    if (n.match_id) {
+      return `/messages/${n.match_id}`;
+    }
+    return undefined;
+  };
+
+  const handleNotificationClick = async (n: ApiNotification) => {
+    const href = getNotificationHref(n);
     try {
-      await notificationsApi.markRead(id);
+      await notificationsApi.markRead(n.id);
       setNotifications((prev) =>
-        prev.map((n) => (n.id === id ? { ...n, is_read: true } : n))
+        prev.map((item) => (item.id === n.id ? { ...item, is_read: true } : item))
       );
       setUnreadCount((c) => Math.max(0, c - 1));
+      if (href) {
+        router.push(href);
+      }
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'Failed to mark as read';
       toast.error(message);
@@ -142,7 +162,7 @@ export default function NotificationsPage() {
             return (
               <button
                 key={n.id}
-                onClick={() => handleMarkRead(n.id)}
+                onClick={() => handleNotificationClick(n)}
                 className={`w-full text-left card flex items-start gap-4 transition-colors ${
                   !n.is_read
                     ? 'border-primary-200 bg-primary-50/30 hover:bg-primary-50/50'

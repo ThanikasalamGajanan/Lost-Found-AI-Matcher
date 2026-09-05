@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import type { Match } from '@/types';
 import { verifyApi } from '@/lib/api';
 import { CheckCircle, XCircle, MessageCircle, Send, AlertTriangle, PackageCheck, X } from 'lucide-react';
@@ -16,6 +17,7 @@ interface MatchCardProps {
 }
 
 export function MatchCard({ match, userRole, onClaim, onVerified }: MatchCardProps) {
+  const router = useRouter();
   const [showVerification, setShowVerification] = useState(false);
   const [question, setQuestion] = useState('');
   const [answer, setAnswer] = useState('');
@@ -79,6 +81,7 @@ export function MatchCard({ match, userRole, onClaim, onVerified }: MatchCardPro
         setPendingAttemptId('');
         toast.success(result.message);
         onVerified?.();
+        router.push(`/messages/${match.id}`);
       } else if (result.result === 'escalated') {
         setShowVerification(false);
         setPendingAttemptId('');
@@ -116,6 +119,7 @@ export function MatchCard({ match, userRole, onClaim, onVerified }: MatchCardPro
         setPendingAttemptId('');
         setShowVerification(false);
         onVerified?.();
+        router.push(`/messages/${match.id}`);
       } else if (result.result === 'escalated') {
         setPendingAttemptId('');
         setShowVerification(false);

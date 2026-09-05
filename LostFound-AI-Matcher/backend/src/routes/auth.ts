@@ -27,6 +27,8 @@ authRoutes.post('/signup', asyncHandler(async (req, res) => {
     throw new AppError(error?.message || 'Signup failed', 400);
   }
 
+  console.log(`[AUTH] Signup succeeded for ${email} -> user ${data.user.id}`);
+
   // Create local user row (needed when using local PostgreSQL instead of Supabase DB)
   try {
     await queryOne(
@@ -62,6 +64,8 @@ authRoutes.post('/login', asyncHandler(async (req, res) => {
   if (error || !data.user) {
     throw new AppError('Invalid email or password', 401);
   }
+
+  console.log(`[AUTH] Login succeeded for ${email} -> user ${data.user.id}`);
 
   // Fetch role from our users table. Fall back to the Supabase REST API when the
   // PostgreSQL pool is unreachable (e.g. bad DATABASE_URL on Render) — the users

@@ -9,6 +9,19 @@ import { useAuthStore } from '@/lib/store';
 import { MapPin, Clock, ChevronRight, PackageOpen, Loader2, Plus } from 'lucide-react';
 import toast from 'react-hot-toast';
 
+function getUserIdFromToken(token: string | null): string | null {
+  if (!token) return null;
+  try {
+    const payload = token.split('.')[1];
+    const base64 = payload.replace(/-/g, '+').replace(/_/g, '/');
+    const json = atob(base64);
+    const decoded = JSON.parse(json) as { sub?: string };
+    return decoded.sub || null;
+  } catch {
+    return null;
+  }
+}
+
 type Tab = 'lost' | 'found';
 
 interface DashboardItem {
@@ -34,7 +47,7 @@ const statusColours: Record<string, string> = {
 };
 
 export default function DashboardPage() {
-  const { user, isLoading: authLoading } = useAuthStore();
+  const { user, token, isLoading: authLoading, logout } = useAuthStore();
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<Tab>('lost');
   const [lostItems, setLostItems] = useState<DashboardItem[]>([]);
@@ -42,10 +55,11 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true);
 
   const fetchReports = useCallback(async () => {
-    if (!user) return;
+    const userId = getUserIdFromToken(token) || user?.id;
+    if (!userId) return;
     setLoading(true);
     try {
-      const data = await reportsApi.getByUser(user.id);
+      const data = await reportsApi.getByUser(userId);
       setLostItems(normalizeReports(data.lost || [], 'lost'));
       setFoundItems(normalizeReports(data.found || [], 'found'));
     } catch (err: unknown) {
@@ -61,8 +75,17 @@ export default function DashboardPage() {
       router.push('/login');
       return;
     }
+
+    const tokenUserId = getUserIdFromToken(token);
+    if (token && user && tokenUserId && tokenUserId !== user.id) {
+      toast.error('Session mismatch. Please log in again.');
+      logout();
+      router.push('/login');
+      return;
+    }
+
     if (user) fetchReports();
-  }, [user, authLoading, router, fetchReports]);
+  }, [user, authLoading, token, router, fetchReports, logout]);
 
   if (authLoading) {
     return (
