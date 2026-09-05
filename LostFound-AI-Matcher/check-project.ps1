@@ -39,7 +39,7 @@ Check "backend/node_modules"       (Test-Path (Join-Path $backend  'node_modules
 Check "frontend/node_modules"      (Test-Path (Join-Path $frontend 'node_modules')) "run: cd frontend; npm install"
 
 Write-Host "`n=== 2. Backend: TypeScript check (tsc --noEmit) ===" -ForegroundColor Cyan
-$r = Run-In $backend 'npx.cmd' @('tsc', '--noEmit')
+$r = Run-In $backend 'npx.cmd' @('-p', 'typescript', 'tsc', '--noEmit')
 Check "Backend compiles with no type errors" $r.ok "if corrupted types appear (e.g. joi / @types/node), run: Remove-Item -Recurse -Force backend\node_modules; cd backend; npm install"
 
 Write-Host "`n=== 3. Backend: Unit tests (vitest) ===" -ForegroundColor Cyan
