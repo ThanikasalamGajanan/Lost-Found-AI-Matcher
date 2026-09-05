@@ -63,6 +63,7 @@ export interface Match {
   created_at: string;
 
   // Joined fields from API
+  found_user_id?: string;
   found_category?: string;
   found_brand?: string;
   found_colour?: string;
@@ -70,6 +71,7 @@ export interface Match {
   found_location?: string;
   found_photo_url?: string;
   found_status?: string;
+  lost_user_id?: string;
   lost_category?: string;
   lost_brand?: string;
   lost_colour?: string;
@@ -77,6 +79,7 @@ export interface Match {
   lost_location?: string;
   lost_photo_url?: string;
   lost_status?: string;
+  user_role_in_match?: 'claimant' | 'finder' | null;
 }
 
 export type MatchStatus = 'pending' | 'approved' | 'rejected' | 'disputed';

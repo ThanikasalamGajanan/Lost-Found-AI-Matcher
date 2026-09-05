@@ -178,10 +178,24 @@ export async function runMatchingEngine(
     const foundOwnerId = topMatch.found_item_id === reportId ? source.user_id : (await queryOne<{ user_id: string }>('SELECT user_id FROM found_items WHERE id = $1', [topMatch.found_item_id]))?.user_id;
 
     if (lostOwnerId) {
-      await createNotification(lostOwnerId, 'new_match', 'New match found!', `Your lost item has a ${topMatch.total_score}% match with a found item.`, topMatch.lost_item_id, 'lost');
+      await createNotification(
+        lostOwnerId,
+        'new_match',
+        'New match — verify ownership',
+        `Your lost item has a ${topMatch.total_score}% match. Click here to answer the verification question and claim it.`,
+        topMatch.lost_item_id,
+        'lost'
+      );
     }
     if (foundOwnerId) {
-      await createNotification(foundOwnerId, 'new_match', 'New match found!', `A lost item matches your found item at ${topMatch.total_score}%.`, topMatch.found_item_id, 'found');
+      await createNotification(
+        foundOwnerId,
+        'new_match',
+        'New match — wait for verification',
+        `A lost item matches your found item at ${topMatch.total_score}%. The owner will answer your verification question; you'll be notified when they respond.`,
+        topMatch.found_item_id,
+        'found'
+      );
     }
   }
 

@@ -7,28 +7,12 @@ import { generateEmbedding, extractStructuredFields } from '../services/llmServi
 import { runMatchingEngine } from '../services/matchingEngine.js';
 import { upload, processAndUpload } from '../services/uploadService.js';
 import { findSimilarLostItems, findSimilarFoundItems } from '../services/embeddingSearch.js';
+import { ensureUserExists } from '../utils/ensureUser.js';
 
 export const reportRoutes = Router();
 
 // All report routes require authentication
 reportRoutes.use(authenticate);
-
-/**
- * Ensure a public.users row exists for the authenticated user.
- * In local dev without Supabase Auth tables, the signup mirror may have
- * failed silently; this lets existing and new accounts submit reports.
- * In production the row usually exists already, so ON CONFLICT DO NOTHING
- * keeps it unchanged.
- */
-async function ensureLocalUser(userId: string, email: string): Promise<void> {
-  await queryOne(
-    `INSERT INTO users (id, email, full_name, role, preferred_lang)
-     VALUES ($1, $2, $3, 'user', 'en')
-     ON CONFLICT (id) DO NOTHING
-     RETURNING id`,
-    [userId, email, email.split('@')[0]]
-  );
-}
 
 // ────────────────────────────────────────────────
 // POST /api/reports/upload
@@ -117,7 +101,7 @@ reportRoutes.post(
   validateBody(lostReportSchema),
   asyncHandler(async (req: AuthRequest, res) => {
     const userId = req.userId!;
-    await ensureLocalUser(userId, req.userEmail!);
+    await ensureUserExists(userId, req.userEmail, req.userEmail?.split('@')[0]);
     const {
       category, brand, colour, description,
       location, latitude, longitude, lost_at,
@@ -196,7 +180,7 @@ reportRoutes.post(
   validateBody(foundReportSchema),
   asyncHandler(async (req: AuthRequest, res) => {
     const userId = req.userId!;
-    await ensureLocalUser(userId, req.userEmail!);
+    await ensureUserExists(userId, req.userEmail, req.userEmail?.split('@')[0]);
     const {
       category, brand, colour, description,
       location, latitude, longitude, found_at,
