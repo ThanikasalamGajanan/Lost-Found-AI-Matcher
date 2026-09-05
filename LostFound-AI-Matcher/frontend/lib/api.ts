@@ -185,8 +185,8 @@ export const reportsApi = {
   uploadPhoto: async (file: File) => {
     const formData = new FormData();
     formData.append('photo', file);
-    const data = await apiUpload<{ url: string; fileName: string }>('/upload', formData);
-    return { ...data, photo_url: data.url };
+    const data = await apiUpload<{ photo_url: string }>('/reports/upload', formData);
+    return { photo_url: data.photo_url };
   },
 
   createLost: (data: Record<string, unknown>) =>

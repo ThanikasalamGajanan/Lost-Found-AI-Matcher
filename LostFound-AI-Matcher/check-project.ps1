@@ -86,9 +86,16 @@ if (Test-Path $envFile) {
     if ($line -match '@([^:/]+):(\d+)') {
         $dbHost = $Matches[1]; $dbPort = [int]$Matches[2]
         $tcp = New-Object System.Net.Sockets.TcpClient
+        $reachable = $false
         try {
             $task = $tcp.ConnectAsync($dbHost, $dbPort)
-            $reachable = ($task.Wait(5000) -and $tcp.Connected)
+            try {
+                if ($task.Wait(5000)) {
+                    $reachable = $tcp.Connected
+                }
+            } catch {
+                $reachable = $false
+            }
             Check "TCP ${dbHost}:${dbPort} reachable" $reachable "known issue: TCP opens but PG handshake may still time out locally; migrations are already applied - verify on Render"
         } finally { $tcp.Close() }
     } else {

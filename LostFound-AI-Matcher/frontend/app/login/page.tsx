@@ -8,6 +8,18 @@ import type { User as UserType } from '@/types';
 import { Mail, Lock, User, Loader2, Eye, EyeOff } from 'lucide-react';
 import toast from 'react-hot-toast';
 
+function decodeJwtSub(token: string): string | null {
+  try {
+    const payload = token.split('.')[1];
+    const base64 = payload.replace(/-/g, '+').replace(/_/g, '/');
+    const json = atob(base64);
+    const decoded = JSON.parse(json) as { sub?: string };
+    return decoded.sub || null;
+  } catch {
+    return null;
+  }
+}
+
 interface FormErrors {
   email?: string;
   password?: string;
@@ -70,31 +82,37 @@ export default function LoginPage() {
     setLoading(true);
     logout();
     try {
+      let user;
+      let token;
+
       if (mode === 'signup') {
-        const { user, token } = await authApi.signup(email, password, fullName);
-        login(
-          {
-            ...user,
-            full_name: user.full_name || fullName,
-            preferred_lang: (user.preferred_lang || 'en') as UserType['preferred_lang'],
-            created_at: user.created_at || new Date().toISOString(),
-          } as UserType,
-          token
-        );
-        toast.success('Account created!');
+        const res = await authApi.signup(email, password, fullName);
+        user = res.user;
+        token = res.token;
       } else {
-        const { user, token } = await authApi.login(email, password);
-        login(
-          {
-            ...user,
-            full_name: user.full_name || '',
-            preferred_lang: (user.preferred_lang || 'en') as UserType['preferred_lang'],
-            created_at: user.created_at || new Date().toISOString(),
-          } as UserType,
-          token
-        );
-        toast.success('Welcome back!');
+        const res = await authApi.login(email, password);
+        user = res.user;
+        token = res.token;
       }
+
+      const tokenUserId = decodeJwtSub(token);
+      if (!tokenUserId || tokenUserId !== user.id) {
+        toast.error('Server returned mismatched session. Please log in again.');
+        setLoading(false);
+        return;
+      }
+
+      login(
+        {
+          ...user,
+          full_name: user.full_name || (mode === 'signup' ? fullName : ''),
+          preferred_lang: (user.preferred_lang || 'en') as UserType['preferred_lang'],
+          created_at: user.created_at || new Date().toISOString(),
+        } as UserType,
+        token
+      );
+
+      toast.success(mode === 'signup' ? 'Account created!' : 'Welcome back!');
       router.push('/dashboard');
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'Something went wrong';

@@ -8,6 +8,19 @@ import { reportsApi, matchesApi } from '@/lib/api';
 import { useAuthStore } from '@/lib/store';
 import toast from 'react-hot-toast';
 
+function getUserIdFromToken(token: string | null): string | null {
+  if (!token) return null;
+  try {
+    const payload = token.split('.')[1];
+    const base64 = payload.replace(/-/g, '+').replace(/_/g, '/');
+    const json = atob(base64);
+    const decoded = JSON.parse(json) as { sub?: string };
+    return decoded.sub || null;
+  } catch {
+    return null;
+  }
+}
+
 interface SimilarItem {
   id: string;
   category: string;
@@ -21,7 +34,7 @@ interface SimilarItem {
 
 export default function ReportLostPage() {
   const router = useRouter();
-  const { user } = useAuthStore();
+  const { user, token, logout } = useAuthStore();
   const [submitted, setSubmitted] = useState(false);
   const [reportId, setReportId] = useState<string | null>(null);
   const [similarItems, setSimilarItems] = useState<SimilarItem[]>([]);
@@ -30,6 +43,14 @@ export default function ReportLostPage() {
   const handleSubmit = async (data: Record<string, unknown>) => {
     if (!user) {
       toast.error('Please log in first');
+      router.push('/login');
+      return;
+    }
+
+    const tokenUserId = getUserIdFromToken(token);
+    if (token && tokenUserId && tokenUserId !== user.id) {
+      toast.error('Session mismatch. Please log in again.');
+      logout();
       router.push('/login');
       return;
     }

@@ -30,19 +30,36 @@ async function mirrorAuthUserLocally(userId: string, email: string, fullName: st
   );
 }
 
-async function ensureTestUser(email: string): Promise<string> {
-  const { data: listData, error: listError } = await supabaseAdmin.auth.admin.listUsers();
-  if (listError) {
-    throw new Error(`Failed to list auth users: ${listError.message}`);
+async function findAuthUserByEmail(email: string): Promise<{ id: string; user_metadata?: Record<string, unknown> } | undefined> {
+  let page = 1;
+  const perPage = 100;
+  while (true) {
+    const { data, error } = await supabaseAdmin.auth.admin.listUsers({ page, perPage });
+    if (error) {
+      throw new Error(`Failed to list auth users: ${error.message}`);
+    }
+    if (!data.users.length) {
+      return undefined;
+    }
+    const found = data.users.find((u) => u.email === email);
+    if (found) {
+      return { id: found.id, user_metadata: found.user_metadata as Record<string, unknown> };
+    }
+    if (data.users.length < perPage) {
+      return undefined;
+    }
+    page++;
   }
+}
 
-  const existingUser = listData.users.find((u) => u.email === email);
+async function ensureTestUser(email: string): Promise<string> {
+  let existingUser = await findAuthUserByEmail(email);
 
   let userId: string;
   let fullName = 'E2E Test User';
   if (existingUser) {
     userId = existingUser.id;
-    fullName = (existingUser.user_metadata as { full_name?: string } | undefined)?.full_name ?? fullName;
+    fullName = (existingUser.user_metadata?.full_name as string | undefined) ?? fullName;
     console.log(`Using existing auth user: ${email} (${userId})`);
   } else {
     const { data: createData, error: createError } = await supabaseAdmin.auth.admin.createUser({
@@ -52,12 +69,22 @@ async function ensureTestUser(email: string): Promise<string> {
       user_metadata: { full_name: fullName },
     });
 
-    if (createError || !createData.user) {
+    // If a race or previous run left the user in auth but not in public.users,
+    // listUsers may have missed it; look again before giving up.
+    if (createError?.message?.includes('already been registered')) {
+      existingUser = await findAuthUserByEmail(email);
+      if (!existingUser) {
+        throw new Error(`Failed to create auth user: ${createError.message}`);
+      }
+      userId = existingUser.id;
+      fullName = (existingUser.user_metadata?.full_name as string | undefined) ?? fullName;
+      console.log(`Found existing auth user after create conflict: ${email} (${userId})`);
+    } else if (createError || !createData.user) {
       throw new Error(`Failed to create auth user: ${createError?.message ?? 'unknown error'}`);
+    } else {
+      userId = createData.user.id;
+      console.log(`Created auth user: ${email} (${userId})`);
     }
-
-    userId = createData.user.id;
-    console.log(`Created auth user: ${email} (${userId})`);
   }
 
   await mirrorAuthUserLocally(userId, email, fullName);
@@ -77,18 +104,14 @@ async function ensureTestUser(email: string): Promise<string> {
 
 async function createSecondUser(): Promise<string> {
   const email = 'finder@test.com';
-  const { data: listData, error: listError } = await supabaseAdmin.auth.admin.listUsers();
-  if (listError) {
-    throw new Error(`Failed to list auth users: ${listError.message}`);
-  }
-
-  const existingUser = listData.users.find((u) => u.email === email);
+  let existingUser = await findAuthUserByEmail(email);
 
   let userId: string;
   let fullName = 'E2E Finder User';
   if (existingUser) {
     userId = existingUser.id;
-    fullName = (existingUser.user_metadata as { full_name?: string } | undefined)?.full_name ?? fullName;
+    fullName = (existingUser.user_metadata?.full_name as string | undefined) ?? fullName;
+    console.log(`Using existing finder auth user: ${email} (${userId})`);
   } else {
     const { data: createData, error: createError } = await supabaseAdmin.auth.admin.createUser({
       email,
@@ -97,11 +120,20 @@ async function createSecondUser(): Promise<string> {
       user_metadata: { full_name: fullName },
     });
 
-    if (createError || !createData.user) {
+    if (createError?.message?.includes('already been registered')) {
+      existingUser = await findAuthUserByEmail(email);
+      if (!existingUser) {
+        throw new Error(`Failed to create finder user: ${createError.message}`);
+      }
+      userId = existingUser.id;
+      fullName = (existingUser.user_metadata?.full_name as string | undefined) ?? fullName;
+      console.log(`Found existing finder auth user after create conflict: ${email} (${userId})`);
+    } else if (createError || !createData.user) {
       throw new Error(`Failed to create finder user: ${createError?.message ?? 'unknown error'}`);
+    } else {
+      userId = createData.user.id;
+      console.log(`Created finder auth user: ${email} (${userId})`);
     }
-
-    userId = createData.user.id;
   }
 
   await mirrorAuthUserLocally(userId, email, fullName);

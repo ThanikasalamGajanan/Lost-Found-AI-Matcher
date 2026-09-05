@@ -3,6 +3,7 @@ import cors from 'cors';
 import helmet from 'helmet';
 import morgan from 'morgan';
 import rateLimit from 'express-rate-limit';
+import path from 'path';
 
 import { config } from './config/index.js';
 import { errorHandler } from './middleware/errorHandler.js';
@@ -49,6 +50,9 @@ app.use('/api/admin', adminRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/upload', uploadRoutes);
 app.use('/api/messages', messageRoutes);
+
+// Serve locally uploaded photos (fallback when Supabase Storage is unavailable)
+app.use('/uploads', express.static(path.resolve(process.cwd(), 'uploads')));
 
 app.use(errorHandler);
 
