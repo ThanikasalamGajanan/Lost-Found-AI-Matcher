@@ -7,6 +7,7 @@ import { queryOne } from '../db/pool.js';
 export interface AuthRequest extends Request {
   userId?: string;
   userRole?: string;
+  userEmail?: string;
 }
 
 interface JwtPayload {
@@ -17,7 +18,7 @@ interface JwtPayload {
 
 /**
  * Verify JWT token from Authorization header.
- * Attaches userId and userRole to the request.
+ * Attaches userId, userRole and userEmail to the request.
  */
 export const authenticate = (req: AuthRequest, _res: Response, next: NextFunction): void => {
   const authHeader = req.headers.authorization;
@@ -30,6 +31,7 @@ export const authenticate = (req: AuthRequest, _res: Response, next: NextFunctio
     const decoded = jwt.verify(token, config.jwt.secret) as JwtPayload;
     req.userId = decoded.sub;
     req.userRole = decoded.role;
+    req.userEmail = decoded.email;
     next();
   } catch {
     throw new AppError('Invalid or expired token', 401);
