@@ -16,7 +16,7 @@ services:
       - key: FRONTEND_URL
         value: "https://lost-found-ai-matcher-mindmeld1.vercel.app"
       - key: CORS_ORIGINS
-        value: "https://lost-found-ai-matcher-mindmeld1.vercel.app,http://localhost:3000"
+        value: "https://lost-found-ai-matcher-mindmeld1.vercel.app,https://lost-found-ai-matcher-alpha.vercel.app,https://lost-found-ai-matcher-git-main-mindmeld1.vercel.app,http://localhost:3000"
       - key: NEXT_PUBLIC_SUPABASE_URL
         sync: false
       - key: NEXT_PUBLIC_SUPABASE_ANON_KEY
