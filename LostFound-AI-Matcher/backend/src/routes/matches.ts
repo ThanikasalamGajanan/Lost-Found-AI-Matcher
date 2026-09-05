@@ -74,46 +74,41 @@ matchRoutes.get('/:reportId', asyncHandler(async (req: AuthRequest, res) => {
 
   let matches;
 
-  // Return full details for both items plus owner IDs so the frontend can
-  // render the correct role-specific UI regardless of which report URL the
-  // user lands on.
-  matches = await query(
-    `SELECT
-      m.id, m.total_score, m.desc_score,
-      m.location_score, m.time_score, m.attr_score, m.status,
-      m.created_at,
-      f.id AS found_id, f.user_id AS found_user_id, f.category AS found_category,
-      f.brand AS found_brand, f.colour AS found_colour,
-      f.description AS found_description, f.location AS found_location,
-      f.photo_url AS found_photo_url, f.found_at,
-      f.status AS found_status,
-      l.id AS lost_id, l.user_id AS lost_user_id, l.category AS lost_category,
-      l.brand AS lost_brand, l.colour AS lost_colour,
-      l.description AS lost_description, l.location AS lost_location,
-      l.photo_url AS lost_photo_url, l.lost_at,
-      l.status AS lost_status
-    FROM matches m
-    JOIN found_items f ON f.id = m.found_item_id
-    JOIN lost_items l ON l.id = m.lost_item_id
-    WHERE ${type === 'lost' ? 'm.lost_item_id' : 'm.found_item_id'} = $1
-    ORDER BY m.total_score DESC`,
-    [reportId]
-  );
+  if (type === 'lost') {
+    matches = await query(
+      `SELECT
+        m.id, m.total_score, m.desc_score,
+        m.location_score, m.time_score, m.attr_score, m.status,
+        m.created_at,
+        f.id AS found_id, f.category AS found_category,
+        f.brand AS found_brand, f.colour AS found_colour,
+        f.description AS found_description, f.location AS found_location,
+        f.photo_url AS found_photo_url, f.found_at,
+        f.status AS found_status
+      FROM matches m
+      JOIN found_items f ON f.id = m.found_item_id
+      WHERE m.lost_item_id = $1
+      ORDER BY m.total_score DESC`,
+      [reportId]
+    );
+  } else {
+    matches = await query(
+      `SELECT
+        m.id, m.total_score, m.desc_score,
+        m.location_score, m.time_score, m.attr_score, m.status,
+        m.created_at,
+        l.id AS lost_id, l.category AS lost_category,
+        l.brand AS lost_brand, l.colour AS lost_colour,
+        l.description AS lost_description, l.location AS lost_location,
+        l.photo_url AS lost_photo_url, l.lost_at,
+        l.status AS lost_status
+      FROM matches m
+      JOIN lost_items l ON l.id = m.lost_item_id
+      WHERE m.found_item_id = $1
+      ORDER BY m.total_score DESC`,
+      [reportId]
+    );
+  }
 
-  // Tell the frontend exactly which role this authenticated user plays in
-  // each match, avoiding stale localStorage/account-switch confusion.
-  const matchesWithRole = matches.map((match) => {
-    const m = match as Record<string, unknown>;
-    const lostUserId = m.lost_user_id as string | undefined;
-    const foundUserId = m.found_user_id as string | undefined;
-    let userRole: 'claimant' | 'finder' | null = null;
-    if (lostUserId && lostUserId === req.userId) {
-      userRole = 'claimant';
-    } else if (foundUserId && foundUserId === req.userId) {
-      userRole = 'finder';
-    }
-    return { ...m, user_role_in_match: userRole };
-  });
-
-  res.json(matchesWithRole);
+  res.json(matches);
 }));

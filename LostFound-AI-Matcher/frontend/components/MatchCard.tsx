@@ -232,7 +232,7 @@ export function MatchCard({ match, userRole, onClaim, onVerified }: MatchCardPro
         ) : userRole === 'claimant' ? (
           !showVerification ? (
             <button onClick={handleStartVerification} className="btn-primary text-sm flex items-center gap-2 self-start">
-              <MessageCircle className="w-4 h-4" /> Request this item
+              <MessageCircle className="w-4 h-4" /> Start Verification
             </button>
           ) : (
             <div className="w-full space-y-3">
@@ -283,14 +283,7 @@ export function MatchCard({ match, userRole, onClaim, onVerified }: MatchCardPro
               </div>
             </div>
           ) : (
-            <div className="space-y-2">
-              <p className="text-sm text-gray-500">
-                You are the finder. The person who lost this item will answer your verification question.
-              </p>
-              <p className="text-xs text-gray-400">
-                You will be notified when they respond. If they answer correctly, a private message thread will open here.
-              </p>
-            </div>
+            <p className="text-sm text-gray-500">Waiting for the claimant to answer the verification question.</p>
           )
         ) : null}
       </div>
@@ -300,7 +293,7 @@ export function MatchCard({ match, userRole, onClaim, onVerified }: MatchCardPro
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-xl p-6 max-w-md w-full shadow-xl">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-bold text-gray-900">Request this item</h3>
+              <h3 className="text-lg font-bold text-gray-900">Verify this is yours</h3>
               <button
                 onClick={() => setShowVerification(false)}
                 className="text-gray-400 hover:text-gray-600"

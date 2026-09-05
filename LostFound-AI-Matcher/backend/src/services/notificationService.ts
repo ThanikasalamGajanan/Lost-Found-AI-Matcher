@@ -1,5 +1,4 @@
 import { queryOne } from '../db/pool.js';
-import { ensureUserExists } from '../utils/ensureUser.js';
 import { sendEmail } from './emailService.js';
 import { config } from '../config/index.js';
 
@@ -26,10 +25,7 @@ export async function createNotification(
   itemType?: ItemType,
   matchId?: string
 ): Promise<void> {
-  // 1. Ensure the recipient has a users row (local-dev fallback / backfill).
-  await ensureUserExists(userId);
-
-  // 2. Insert in-app notification
+  // 1. Insert in-app notification
   const notification = await queryOne<{ id: string }>(
     `INSERT INTO notifications (user_id, type, title, message, match_id, item_id, item_type)
      VALUES ($1, $2, $3, $4, $5, $6, $7)

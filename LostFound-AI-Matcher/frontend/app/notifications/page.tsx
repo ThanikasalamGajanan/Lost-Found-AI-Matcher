@@ -83,22 +83,6 @@ export default function NotificationsPage() {
     }
   };
 
-  const handleNotificationClick = (n: ApiNotification) => {
-    // Mark read in the background; don't block navigation.
-    handleMarkRead(n.id).catch(() => {});
-
-    // New match → go to the report's match results page so the user can verify.
-    if (n.item_id && n.item_type) {
-      router.push(`/matches/${n.item_id}?type=${n.item_type}`);
-      return;
-    }
-
-    // Approved / already-unlocked match → go straight to the message thread.
-    if (n.match_id) {
-      router.push(`/messages/${n.match_id}`);
-    }
-  };
-
   const handleMarkAllRead = async () => {
     try {
       await notificationsApi.markAllRead();
@@ -158,8 +142,8 @@ export default function NotificationsPage() {
             return (
               <button
                 key={n.id}
-                onClick={() => handleNotificationClick(n)}
-                className={`w-full text-left card flex items-start gap-4 transition-colors cursor-pointer ${
+                onClick={() => handleMarkRead(n.id)}
+                className={`w-full text-left card flex items-start gap-4 transition-colors ${
                   !n.is_read
                     ? 'border-primary-200 bg-primary-50/30 hover:bg-primary-50/50'
                     : 'hover:bg-gray-50'

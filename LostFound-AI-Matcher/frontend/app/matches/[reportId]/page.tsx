@@ -78,22 +78,14 @@ export default function MatchesPage() {
         </div>
       ) : (
         <div className="space-y-6">
-          {sortedMatches.map((match) => {
-            // The backend determines the authenticated user's role in this
-            // match, which is more reliable than guessing from the URL when
-            // the same browser switches between accounts.
-            const actualRole: 'claimant' | 'finder' =
-              match.user_role_in_match ?? (type === 'lost' ? 'claimant' : 'finder');
-
-            return (
-              <MatchCard
-                key={match.id}
-                match={match}
-                userRole={actualRole}
-                onVerified={fetchMatches}
-              />
-            );
-          })}
+          {sortedMatches.map((match) => (
+            <MatchCard
+              key={match.id}
+              match={match}
+              userRole={type === 'lost' ? 'claimant' : 'finder'}
+              onVerified={fetchMatches}
+            />
+          ))}
         </div>
       )}
     </div>
